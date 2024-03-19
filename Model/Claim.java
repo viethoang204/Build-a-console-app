@@ -7,14 +7,22 @@ public class Claim {
     private String id; // Format: f-xxxxxxxxxx
     private Date claimDate;
     private Customer insuredPerson;
-    private String cardNumber;
+    private InsuranceCard cardNumber;
     private Date examDate;
     private List<String> documents; // Format: ClaimId_CardNumber_DocumentName.pdf
     private double claimAmount;
     private String status; // New, Processing, Done
     private String receiverBankingInfo; // Bank – Name – Number
 
-    public Claim(String id, Date claimDate, Customer insuredPerson, String cardNumber, Date examDate, List<String> documents, double claimAmount, String status, String receiverBankingInfo) {
+    public InsuranceCard getCardNumber() {
+        return cardNumber;
+    }
+
+    public void setCardNumber(InsuranceCard cardNumber) {
+        this.cardNumber = cardNumber;
+    }
+
+    public Claim(String id, Date claimDate, Customer insuredPerson, InsuranceCard cardNumber, Date examDate, List<String> documents, double claimAmount, String status, String receiverBankingInfo) {
         this.id = id;
         this.claimDate = claimDate;
         this.insuredPerson = insuredPerson;
@@ -48,14 +56,6 @@ public class Claim {
 
     public void setInsuredPerson(Customer insuredPerson) {
         this.insuredPerson = insuredPerson;
-    }
-
-    public String getCardNumber() {
-        return cardNumber;
-    }
-
-    public void setCardNumber(String cardNumber) {
-        this.cardNumber = cardNumber;
     }
 
     public Date getExamDate() {

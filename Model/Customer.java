@@ -3,7 +3,7 @@ package Model;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class Customer {
+public class Customer {
     protected String id; // Format: c-xxxxxxx
     protected String fullName;
     protected InsuranceCard insuranceCard;
@@ -14,6 +14,10 @@ public abstract class Customer {
         this.fullName = fullName;
         this.insuranceCard = insuranceCard;
         this.claims = new ArrayList<>();
+    }
+
+    public Customer(String insuredPerson) {
+        this.fullName = insuredPerson;
     }
 
     public String getId() {
