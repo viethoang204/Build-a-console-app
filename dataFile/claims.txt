@@ -1,0 +1,16 @@
+ID, Claim Date, Insured Person, Card Number, Exam Date, List of Documents, Claim Amount, Status, Receiver Banking Info
+f-0000000001, 2023-03-01, John Doe, 1234567890, 2023-03-02, f-0000000001_1234567890_medical_record.pdf, 1200.00, New, Bank1 - John Doe - 0001
+f-0000000002, 2023-03-05, Jane Doe, 1234567891, 2023-03-06, f-0000000002_1234567891_prescription.pdf, 300.00, Processing, Bank2 - Jane Doe - 0002
+f-0000000003, 2023-03-10, Alice Johnson, 1234567892, 2023-03-11, f-0000000003_1234567892_lab_report.pdf, 450.50, Done, Bank3 - Alice Johnson - 0003
+f-0000000004, 2023-03-15, Bob Marley, 1234567893, 2023-03-16, f-0000000004_1234567893_X-ray.pdf, 200.00, New, Bank4 - Bob Marley - 0004
+f-0000000005, 2023-03-20, Charlie Brown, 1234567894, 2023-03-21, f-0000000005_1234567894_immunization_record.pdf, 150.00, Processing, Bank5 - Charlie Brown - 0005
+f-0000000006, 2023-04-01, Diana Prince, 1234567895, 2023-04-02, f-0000000006_1234567895_surgery_report.pdf, 2200.00, Done, Bank6 - Diana Prince - 0006
+f-0000000007, 2023-04-07, Edward Norton, 1234567896, 2023-04-08, f-0000000007_1234567896_physical_therapy_record.pdf, 600.00, New, Bank7 - Edward Norton - 0007
+f-0000000008, 2023-04-13, Fiona Apple, 1234567897, 2023-04-14, f-0000000008_1234567897_prescription.pdf, 75.00, Processing, Bank8 - Fiona Apple - 0008
+f-0000000009, 2023-04-19, George Clooney, 1234567898, 2023-04-20, f-0000000009_1234567898_dental_record.pdf, 300.00, Done, Bank9 - George Clooney - 0009
+f-0000000010, 2023-04-25, Hannah Montana, 1234567899, 2023-04-26, f-0000000010_1234567899_vision_exam.pdf, 100.00, New, Bank10 - Hannah Montana - 0010
+f-0000000011, 2023-05-01, Ian Somerhalder, 1234567800, 2023-05-02, f-0000000011_1234567800_vaccination_record.pdf, 50.00, Processing, Bank11 - Ian Somerhalder - 0011
+f-0000000012, 2023-05-07, Julia Roberts, 1234567801, 2023-05-08, f-0000000012_1234567801_medical_consultation.pdf, 250.00, Done, Bank12 - Julia Roberts - 0012
+f-0000000013, 2023-05-13, Kevin Hart, 1234567802, 2023-05-14, f-0000000013_1234567802_orthopedic_consult.pdf, 1100.00, New, Bank13 - Kevin Hart - 0013
+f-0000000014, 2023-05-19, Lisa Simpson, 1234567803, 2023-05-20, f-0000000014_1234567803_chiropractic_service.pdf, 400.00, Processing, Bank14 - Lisa Simpson - 0014
+f-0000000015, 2023-05-25, Michael Scott, 1234567804, 2023-05-26, f-0000000015_1234567804_emergency_room_visit.pdf, 950.00, Done, Bank15 - Michael Scott - 0015
