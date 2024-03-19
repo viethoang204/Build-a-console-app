@@ -25,13 +25,13 @@ public class Menu {
             switch (choice) {
                 case 1:
                     // Call method to add claim
-                    Claim claimToAdd = new Claim(); // You need to create a new Claim object here
-                    claimManager.add(claimToAdd);
+//                    Claim claimToAdd = new Claim(); // You need to create a new Claim object here
+//                    claimManager.add(claimToAdd);
                     break;
                 case 2:
                     // Call method to update claim
-                    Claim claimToUpdate = new Claim(); // You need to create a new Claim object here
-                    claimManager.update(claimToUpdate);
+//                    Claim claimToUpdate = new Claim(); // You need to create a new Claim object here
+//                    claimManager.update(claimToUpdate);
                     break;
                 case 3:
                     // Call method to delete claim
