@@ -1,10 +1,4 @@
 ID,ClaimDate,InsuredPerson,CardNumber,ExamDate,ListofDocuments,Amount,Status,ReceiverBankingInfor
-c-0000000005,26-12-2022,Model.Customer@312b1dae,Model.InsuranceCard@7530d0a,26-12-2022,[ f-0000000005_1234567894_immunization_record.pdf],150.0, Processing, Bank5 - Charlie Brown - 0005
-c-0000000006,26-12-2022,Model.Customer@27bc2616,Model.InsuranceCard@3941a79c,26-12-2022,[ f-0000000006_1234567895_surgery_report.pdf],2200.0, Done, Bank6 - Diana Prince - 0006
-c-0000000007,26-12-2022,Model.Customer@506e1b77,Model.InsuranceCard@4fca772d,26-12-2022,[ f-0000000007_1234567896_physical_therapy_record.pdf],600.0, New, Bank7 - Edward Norton - 0007
-c-0000000008,26-12-2022,Model.Customer@9807454,Model.InsuranceCard@3d494fbf,26-12-2022,[ f-0000000008_1234567897_prescription.pdf],75.0, Processing, Bank8 - Fiona Apple - 0008
-c-0000000010,26-12-2022,Model.Customer@1ddc4ec2,Model.InsuranceCard@133314b,26-12-2022,[ f-0000000010_1234567899_vision_exam.pdf],100.0, New, Bank10 - Hannah Montana - 0010
-c-0000000011,26-12-2022,Model.Customer@b1bc7ed,Model.InsuranceCard@7cd84586,26-12-2022,[ f-0000000011_1234567800_vaccination_record.pdf],50.0, Processing, Bank11 - Ian Somerhalder - 0011
-c-0000000012,26-12-2022,Model.Customer@30dae81,Model.InsuranceCard@1b2c6ec2,26-12-2022,[ f-0000000012_1234567801_medical_consultation.pdf],250.0, Done, Bank12 - Julia Roberts - 0012
-c-0000000013,26-12-2022,Model.Customer@4edde6e5,Model.InsuranceCard@70177ecd,26-12-2022,[ f-0000000013_1234567802_orthopedic_consult.pdf],1100.0, New, Bank13 - Kevin Hart - 0013
-c-0000000014,26-12-2022,Model.Customer@1e80bfe8,Model.InsuranceCard@66a29884,26-12-2022,[ f-0000000014_1234567803_chiropractic_service.pdf],400.0, Processing, Bank14 - Lisa Simpson - 0014
+f-0000000001, 20-04-2023, c-0000001, 1234567890, 15-04-2023, [f-0000000001_1234567890_Document1.pdf; ClaimId_CardNumber_Document2.pdf], 3000, Done, TECHCOMBANK - 0987654321 - Duong Viet Hoang
+f-0000000002, 20-02-2024, c-0000001, 1234567890, 18-02-2024, [f-0000000001_1234567890_Document1.pdf], 1000, Processing, TECHCOMBANK - 0987654321 - Duong Viet Hoang
+f-0000000003, 20-03-2024, c-0000002, 1234567891, 18-03-2024, [], 500, New, VIETCOMBANK - 0987654322 - Nguyen Minh Chau

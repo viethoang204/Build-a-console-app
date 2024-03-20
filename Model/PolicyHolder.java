@@ -7,7 +7,7 @@ public class PolicyHolder extends Customer {
     private List<Dependent> dependents;
 
     public PolicyHolder(String id, String fullName, InsuranceCard insuranceCard) {
-        super(id, fullName, insuranceCard);
+        super(id, fullName, insuranceCard, new ArrayList<>(), new ArrayList<>());
         this.dependents = new ArrayList<>();
     }
 
@@ -19,4 +19,3 @@ public class PolicyHolder extends Customer {
         this.dependents = dependents;
     }
 }
-

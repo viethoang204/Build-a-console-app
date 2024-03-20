@@ -1,16 +1,4 @@
-ID, Full Name, Insurance Card
-c-0000001, John Doe, 1234567890
-c-0000002, Jane Doe, 1234567891
-c-0000003, Alice Johnson, 1234567892
-c-0000004, Bob Marley, 1234567893
-c-0000005, Charlie Brown, 1234567894
-c-0000006, Diana Prince, 1234567895
-c-0000007, Edward Norton, 1234567896
-c-0000008, Fiona Apple, 1234567897
-c-0000009, George Clooney, 1234567898
-c-0000010, Hannah Montana, 1234567899
-c-0000011, Ian Somerhalder, 1234567800
-c-0000012, Julia Roberts, 1234567801
-c-0000013, Kevin Hart, 1234567802
-c-0000014, Lisa Simpson, 1234567803
-c-0000015, Michael Scott, 1234567804
+ID, Full Name, Insurance Card, List Of Claims, List Of Dependents
+c-0000001, Duong Viet Hoang, 1234567890, [f-0000000001; f-0000000002], [c-0000002; c-0000003]
+c-0000002, Nguyen Minh Chau, 1234567891, [f-0000000003], []
+c-0000003, Nguyen Hung Cuong, 1234567892, [], []
