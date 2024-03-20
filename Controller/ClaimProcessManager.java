@@ -10,7 +10,7 @@ import java.util.List;
 public interface ClaimProcessManager {
     void add(Date claimdate, Customer insuredperson, InsuranceCard cardnumber, Date examdate, List<String> listofdocuments, double amount, String status, String receiverbankinginfor);
     void update(Claim claim);
-    void delete(String claimId);
+    boolean delete(String portID);
     Claim getOne(String claimId);
     List<Claim> getAll();
 }
