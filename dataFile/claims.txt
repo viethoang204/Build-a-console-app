@@ -1,16 +1,10 @@
 ID,ClaimDate,InsuredPerson,CardNumber,ExamDate,ListofDocuments,Amount,Status,ReceiverBankingInfor
-c-0000000001,Wed Mar 01 00:00:00 ICT 2023,Model.Customer@12edcd21,Model.InsuranceCard@34c45dca,Thu Mar 02 00:00:00 ICT 2023,[ f-0000000001_1234567890_medical_record.pdf],1200.0, New, Bank1 - John Doe - 0001
-c-0000000002,Sun Mar 05 00:00:00 ICT 2023,Model.Customer@52cc8049,Model.InsuranceCard@5b6f7412,Mon Mar 06 00:00:00 ICT 2023,[ f-0000000002_1234567891_prescription.pdf],300.0, Processing, Bank2 - Jane Doe - 0002
-c-0000000003,Fri Mar 10 00:00:00 ICT 2023,Model.Customer@27973e9b,Model.InsuranceCard@312b1dae,Sat Mar 11 00:00:00 ICT 2023,[ f-0000000003_1234567892_lab_report.pdf],450.5, Done, Bank3 - Alice Johnson - 0003
-c-0000000004,Wed Mar 15 00:00:00 ICT 2023,Model.Customer@7530d0a,Model.InsuranceCard@27bc2616,Thu Mar 16 00:00:00 ICT 2023,[ f-0000000004_1234567893_X-ray.pdf],200.0, New, Bank4 - Bob Marley - 0004
-c-0000000005,Mon Mar 20 00:00:00 ICT 2023,Model.Customer@3941a79c,Model.InsuranceCard@506e1b77,Tue Mar 21 00:00:00 ICT 2023,[ f-0000000005_1234567894_immunization_record.pdf],150.0, Processing, Bank5 - Charlie Brown - 0005
-c-0000000006,Sat Apr 01 00:00:00 ICT 2023,Model.Customer@4fca772d,Model.InsuranceCard@9807454,Sun Apr 02 00:00:00 ICT 2023,[ f-0000000006_1234567895_surgery_report.pdf],2200.0, Done, Bank6 - Diana Prince - 0006
-c-0000000007,Fri Apr 07 00:00:00 ICT 2023,Model.Customer@3d494fbf,Model.InsuranceCard@1ddc4ec2,Sat Apr 08 00:00:00 ICT 2023,[ f-0000000007_1234567896_physical_therapy_record.pdf],600.0, New, Bank7 - Edward Norton - 0007
-c-0000000008,Thu Apr 13 00:00:00 ICT 2023,Model.Customer@133314b,Model.InsuranceCard@b1bc7ed,Fri Apr 14 00:00:00 ICT 2023,[ f-0000000008_1234567897_prescription.pdf],75.0, Processing, Bank8 - Fiona Apple - 0008
-c-0000000009,Wed Apr 19 00:00:00 ICT 2023,Model.Customer@7cd84586,Model.InsuranceCard@30dae81,Thu Apr 20 00:00:00 ICT 2023,[ f-0000000009_1234567898_dental_record.pdf],300.0, Done, Bank9 - George Clooney - 0009
-c-0000000010,Tue Apr 25 00:00:00 ICT 2023,Model.Customer@1b2c6ec2,Model.InsuranceCard@4edde6e5,Wed Apr 26 00:00:00 ICT 2023,[ f-0000000010_1234567899_vision_exam.pdf],100.0, New, Bank10 - Hannah Montana - 0010
-c-0000000011,Mon May 01 00:00:00 ICT 2023,Model.Customer@70177ecd,Model.InsuranceCard@1e80bfe8,Tue May 02 00:00:00 ICT 2023,[ f-0000000011_1234567800_vaccination_record.pdf],50.0, Processing, Bank11 - Ian Somerhalder - 0011
-c-0000000012,Sun May 07 00:00:00 ICT 2023,Model.Customer@66a29884,Model.InsuranceCard@4769b07b,Mon May 08 00:00:00 ICT 2023,[ f-0000000012_1234567801_medical_consultation.pdf],250.0, Done, Bank12 - Julia Roberts - 0012
-c-0000000013,Sat May 13 00:00:00 ICT 2023,Model.Customer@cc34f4d,Model.InsuranceCard@17a7cec2,Sun May 14 00:00:00 ICT 2023,[ f-0000000013_1234567802_orthopedic_consult.pdf],1100.0, New, Bank13 - Kevin Hart - 0013
-c-0000000014,Fri May 19 00:00:00 ICT 2023,Model.Customer@65b3120a,Model.InsuranceCard@6f539caf,Sat May 20 00:00:00 ICT 2023,[ f-0000000014_1234567803_chiropractic_service.pdf],400.0, Processing, Bank14 - Lisa Simpson - 0014
-c-0000000015,Thu May 25 00:00:00 ICT 2023,Model.Customer@79fc0f2f,Model.InsuranceCard@50040f0c,Fri May 26 00:00:00 ICT 2023,[ f-0000000015_1234567804_emergency_room_visit.pdf],950.0, Done, Bank15 - Michael Scott - 0015
+c-0000000005,26-12-2022,Model.Customer@312b1dae,Model.InsuranceCard@7530d0a,26-12-2022,[ f-0000000005_1234567894_immunization_record.pdf],150.0, Processing, Bank5 - Charlie Brown - 0005
+c-0000000006,26-12-2022,Model.Customer@27bc2616,Model.InsuranceCard@3941a79c,26-12-2022,[ f-0000000006_1234567895_surgery_report.pdf],2200.0, Done, Bank6 - Diana Prince - 0006
+c-0000000007,26-12-2022,Model.Customer@506e1b77,Model.InsuranceCard@4fca772d,26-12-2022,[ f-0000000007_1234567896_physical_therapy_record.pdf],600.0, New, Bank7 - Edward Norton - 0007
+c-0000000008,26-12-2022,Model.Customer@9807454,Model.InsuranceCard@3d494fbf,26-12-2022,[ f-0000000008_1234567897_prescription.pdf],75.0, Processing, Bank8 - Fiona Apple - 0008
+c-0000000010,26-12-2022,Model.Customer@1ddc4ec2,Model.InsuranceCard@133314b,26-12-2022,[ f-0000000010_1234567899_vision_exam.pdf],100.0, New, Bank10 - Hannah Montana - 0010
+c-0000000011,26-12-2022,Model.Customer@b1bc7ed,Model.InsuranceCard@7cd84586,26-12-2022,[ f-0000000011_1234567800_vaccination_record.pdf],50.0, Processing, Bank11 - Ian Somerhalder - 0011
+c-0000000012,26-12-2022,Model.Customer@30dae81,Model.InsuranceCard@1b2c6ec2,26-12-2022,[ f-0000000012_1234567801_medical_consultation.pdf],250.0, Done, Bank12 - Julia Roberts - 0012
+c-0000000013,26-12-2022,Model.Customer@4edde6e5,Model.InsuranceCard@70177ecd,26-12-2022,[ f-0000000013_1234567802_orthopedic_consult.pdf],1100.0, New, Bank13 - Kevin Hart - 0013
+c-0000000014,26-12-2022,Model.Customer@1e80bfe8,Model.InsuranceCard@66a29884,26-12-2022,[ f-0000000014_1234567803_chiropractic_service.pdf],400.0, Processing, Bank14 - Lisa Simpson - 0014
