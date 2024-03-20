@@ -16,7 +16,7 @@ public class Menu {
     private ClaimController claimController = ClaimController.getInstance();
 
     public Menu(){
-        claimController.loadUsersFromFile();
+        claimController.loadClaimsFromFile();
     }
 
     public void view(){
@@ -86,7 +86,7 @@ public class Menu {
     Double amount = null;
     while (amount == null) {
         try {
-            System.out.print("Enter claim amount: ");
+            System.out.print("Enter claim amount($): ");
             amount = Double.parseDouble(scanner.nextLine());
         } catch (NumberFormatException e) {
             System.out.println("Invalid number format. Please try again.");

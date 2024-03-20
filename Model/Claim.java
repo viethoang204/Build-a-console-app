@@ -1,6 +1,7 @@
 package Model;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -10,7 +11,7 @@ public class Claim {
     private Customer insuredPerson;
     private InsuranceCard cardNumber;
     private Date examDate;
-    private List<String> documents; // Format: ClaimId_CardNumber_DocumentName.pdf
+    private List<String> documents;
     private double claimAmount;
     private String status; // New, Processing, Done
     private String receiverBankingInfo; // Bank – Name – Number
@@ -30,6 +31,7 @@ public class Claim {
         this.cardNumber = cardNumber;
         this.examDate = examDate;
         this.documents = documents;
+//        this.documents = new ArrayList<>();
         this.claimAmount = claimAmount;
         this.status = status;
         this.receiverBankingInfo = receiverBankingInfo;
@@ -100,28 +102,26 @@ public class Claim {
     }
     // Convert claim data to a single string for file saving
 
-    public String toFileString() {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        String claimDateStr = dateFormat.format(claimDate);
-        String examDateStr = dateFormat.format(examDate);
-        String documentsStr = String.join(";", documents); // Using semicolon to separate documents
-
-        // Assuming Customer and InsuranceCard classes have a toString method that returns a string representation
-        // For example, customer's ID or name, and card's number. If not, you might need to adjust this part.
-        String insuredPersonStr = insuredPerson.toString();
-        String cardNumberStr = cardNumber.toString();
-
-        return String.join(",",
-                id,
-                claimDateStr,
-                insuredPersonStr,
-                cardNumberStr,
-                examDateStr,
-                documentsStr,
-                String.valueOf(claimAmount),
-                status,
-                receiverBankingInfo);
-    }
-
-
+//    public String toFileString() {
+//        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+//        String claimDateStr = dateFormat.format(claimDate);
+//        String examDateStr = dateFormat.format(examDate);
+//        String documentsStr = String.join(";", documents); // Using semicolon to separate documents
+//
+//        // Assuming Customer and InsuranceCard classes have a toString method that returns a string representation
+//        // For example, customer's ID or name, and card's number. If not, you might need to adjust this part.
+//        String insuredPersonStr = insuredPerson.toString();
+//        String cardNumberStr = cardNumber.toString();
+//
+//        return String.join(",",
+//                id,
+//                claimDateStr,
+//                insuredPersonStr,
+//                cardNumberStr,
+//                examDateStr,
+//                documentsStr,
+//                String.valueOf(claimAmount),
+//                status,
+//                receiverBankingInfo);
+//    }
 }

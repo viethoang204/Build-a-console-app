@@ -4,16 +4,26 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Customer {
-    protected String id; // Format: c-xxxxxxx
-    protected String fullName;
-    protected InsuranceCard insuranceCard;
-    protected List<Claim> claims;
+    private String id; // Format: c-xxxxxxx
+    private String fullName;
+    private InsuranceCard insuranceCard;
+    private List<Claim> claims;
+    private List<Claim> dependens;
 
-    public Customer(String id, String fullName, InsuranceCard insuranceCard) {
+    public List<Claim> getDependens() {
+        return dependens;
+    }
+
+    public void setDependens(List<Claim> dependens) {
+        this.dependens = dependens;
+    }
+
+    public Customer(String id, String fullName, InsuranceCard insuranceCard,List<String> claims,List<String> dependens) {
         this.id = id;
         this.fullName = fullName;
         this.insuranceCard = insuranceCard;
         this.claims = new ArrayList<>();
+        this.dependens = new ArrayList<>();
     }
 
     public Customer(String insuredPerson) {
