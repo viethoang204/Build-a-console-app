@@ -8,23 +8,24 @@ public class Customer {
     private String fullName;
     private InsuranceCard insuranceCard;
     private List<Claim> claims;
-    private List<Claim> dependens;
+    private List<String> dependents; // Note: Fixed typo from "dependens" to "dependents"
 
-    public List<Claim> getDependens() {
-        return dependens;
-    }
-
-    public void setDependens(List<Claim> dependens) {
-        this.dependens = dependens;
-    }
-
-    public Customer(String id, String fullName, InsuranceCard insuranceCard,List<String> claims,List<String> dependens) {
+    // Corrected constructor
+    public Customer(String id, String fullName, InsuranceCard insuranceCard, List<Claim> claims, List<Customer> dependents) {
         this.id = id;
         this.fullName = fullName;
         this.insuranceCard = insuranceCard;
-        this.claims = new ArrayList<>();
-        this.dependens = new ArrayList<>();
+        this.claims = new ArrayList<>(); // Assign the provided list directly
+        this.dependents = new ArrayList<>(); // Initialize the list
     }
+
+    public List<String> getDependents() {
+        return dependents;
+    }
+
+    public void setDependents(List<String> dependents) {
+    this.dependents = dependents;
+}
 
     public Customer(String insuredPerson) {
         this.fullName = insuredPerson;
@@ -60,5 +61,15 @@ public class Customer {
 
     public void setClaims(List<Claim> claims) {
         this.claims = claims;
+    }
+
+    public String toString() {
+        return "Customer{" +
+                "id='" + id + '\'' +
+                ", fullName='" + fullName + '\'' +
+                ", insuranceCardNumber='" + (insuranceCard != null ? insuranceCard.getCardNumber() : "N/A") + '\'' +
+                ", claims=" + claims +
+                ", dependents=" + dependents +
+                '}';
     }
 }

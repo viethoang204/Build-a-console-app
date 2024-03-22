@@ -11,11 +11,11 @@ public class PolicyHolder extends Customer {
         this.dependents = new ArrayList<>();
     }
 
-    public List<Dependent> getDependents() {
+    public List<Dependent> getDependentMembers() {
         return dependents;
     }
 
-    public void setDependents(List<Dependent> dependents) {
+    public void setDependentMembers(List<Dependent> dependents) {
         this.dependents = dependents;
     }
 }
