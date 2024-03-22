@@ -19,6 +19,9 @@ public class ClaimController implements ClaimProcessManager {
     private ClaimController() {
         this.listOfCustomers = new ArrayList<>(); // Initialize listOfCustomers
         this.listOfInsuranceCards = new ArrayList<>(); // Initialize listOfInsuranceCards
+
+        loadCustomsFromFile();
+        loadInsuranceCardsFromFile();
     }
 
     public static ClaimController getInstance(){
@@ -35,13 +38,39 @@ public class ClaimController implements ClaimProcessManager {
         writeClaimsToFile();
     }
 
-    public Customer getCustomerById(String id) {
-        for (Customer customer : listOfCustomers) { // Assuming listOfCustomers is a list of Customer objects
+    public String getCustomerNameById(String id) {
+        for (Customer customer : listOfCustomers) {
             if (customer.getId().equals(id)) {
-                return customer;
+                return customer.getFullName().trim(); // Trim to remove leading/trailing spaces
             }
         }
-        return null; // Return null if no customer with the given ID is found
+        return "Customer Not Found"; // Or some other default value indicating no match
+    }
+
+    public void loadInsuranceCardsFromFile() {
+        try {
+            ArrayList<InsuranceCard> cards = new ArrayList<>();
+            Scanner fileScanner = new Scanner(new File("dataFile/insuranceCards.txt"));
+            fileScanner.nextLine();
+            while (fileScanner.hasNext()) {
+                String line = fileScanner.nextLine();
+                StringTokenizer stringTokenizer = new StringTokenizer(line, ",");
+                String cardNumber = stringTokenizer.nextToken();
+                String cardHolder = getCustomerNameById(stringTokenizer.nextToken().trim());
+                String policyOwner = stringTokenizer.nextToken();
+                String expirationDateStr = stringTokenizer.nextToken();
+                Date expirationDate = new SimpleDateFormat("dd-MM-yyyy").parse(expirationDateStr);
+
+                cards.add(new InsuranceCard(cardNumber, cardHolder, policyOwner, expirationDate));
+            }
+            this.listOfInsuranceCards = cards;
+            for (InsuranceCard card : listOfInsuranceCards) {
+                System.out.println(card.toString());
+            }
+            System.out.println("Insurance cards loaded from dataFile/insuranceCards.txt");
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+        }
     }
 
     public InsuranceCard getInsuranceCardByNumber(String cardNumber) {
@@ -52,86 +81,146 @@ public class ClaimController implements ClaimProcessManager {
         }
         return null; // Return null if no card with the given number is found
     }
+
+    public String getCardNumberByCustomerId(String customerId) {
+        for (InsuranceCard insurancecard : listOfInsuranceCards) {
+            if (insurancecard.getCardNumber().equals(customerId)) {
+                return insurancecard.getCardNumber().trim();
+            }
+        }
+        return "Customer Not Found";
+    }
+
+    public Claim getClaimById(String id) {
+        for (Claim claim : listOfClaims) {
+            if (claim.getId().equals(id)) {
+                return claim;
+            }
+        }
+        return null;
+    }
+
+    public Customer getCustomerById(String id) {
+        for (Customer customer : listOfCustomers) {
+            if (customer.getId().equals(id)) {
+                return customer;
+            }
+        }
+        return null;
+    }
+
+    public List<String> getCustomerIdsByIds(List<String> ids) {
+        List<String> foundCustomerIds = new ArrayList<>();
+        for (String id : ids) {
+            for (Customer customer : listOfCustomers) {
+                if (customer.getId().equals(id)) {
+                    foundCustomerIds.add(customer.getId());
+                    break;
+                }
+            }
+        }
+        return foundCustomerIds;
+    }
+
     public void loadCustomsFromFile() {
-    try {
-        ArrayList<Customer> customer = new ArrayList<Customer>();
-        Scanner fileScanner = new Scanner(new File("dataFile/customers.txt"));
-        fileScanner.nextLine();
-        while (fileScanner.hasNext()) {
-            String line = fileScanner.nextLine();
-            StringTokenizer stringTokenizer = new StringTokenizer(line, ",");
-            String ID = stringTokenizer.nextToken();
-            String fullName = stringTokenizer.nextToken();
-            String insuranceCard = stringTokenizer.nextToken();
-            String listOfClaims = stringTokenizer.nextToken();
-            String listOfDependents = stringTokenizer.nextToken();
+        try {
+            loadInsuranceCardsFromFile();
+            ArrayList<Customer> customers = new ArrayList<Customer>();
+            Scanner fileScanner = new Scanner(new File("dataFile/customers.txt"));
+            fileScanner.nextLine();
+            while (fileScanner.hasNext()) {
+                String line = fileScanner.nextLine();
+                StringTokenizer stringTokenizer = new StringTokenizer(line, ",");
+                String ID = stringTokenizer.nextToken();
+                String fullName = stringTokenizer.nextToken();
+                String insuranceCard = getCardNumberByCustomerId(stringTokenizer.nextToken().trim());
+                InsuranceCard insuranceCardObj = getInsuranceCardByNumber(insuranceCard);
+                customers.add(new Customer(ID, fullName, insuranceCardObj, new ArrayList<>(), new ArrayList<>()));
+            }
+            this.listOfCustomers = customers;
 
-            // Convert insuranceCard from String to InsuranceCard
-            InsuranceCard insuranceCardObj = getInsuranceCardByNumber(insuranceCard);
+            // Reset the scanner to start of the file
+            fileScanner = new Scanner(new File("dataFile/customers.txt"));
+            fileScanner.nextLine();
+            while (fileScanner.hasNext()) {
+                String line = fileScanner.nextLine();
+                StringTokenizer stringTokenizer = new StringTokenizer(line, ",");
+                String ID = stringTokenizer.nextToken();
+                stringTokenizer.nextToken(); // Skip fullName
+                stringTokenizer.nextToken(); // Skip insuranceCard
+                String listOfClaims = stringTokenizer.nextToken();
+                String listOfDependents = stringTokenizer.nextToken().replace("[", "").replace("]", "").trim();
 
-            // Convert listOfClaims and listOfDependents from String to List<String>
-            List<String> listOfClaimsList = Arrays.asList(listOfClaims.split(";"));
-            List<String> listOfDependentsList = Arrays.asList(listOfDependents.split(";"));
+                List<String> listOfClaimsList = Arrays.asList(listOfClaims.split(";"));
+                List<String> listOfDependentsList = Arrays.asList(listOfDependents.split(";"));
 
-            customer.add(new Customer(ID,
-                    fullName,
-                    insuranceCardObj,
-                    listOfClaimsList,
-                    listOfDependentsList));
+                Customer currentCustomer = null;
+                for (Customer customer : listOfCustomers) {
+                    if (customer.getId().equals(ID)) {
+                        currentCustomer = customer;
+                        break;
+                    }
+                }
+                currentCustomer.setClaims(listOfClaimsList.stream().map(this::getClaimById).collect(Collectors.toList()));
+                currentCustomer.setDependents(!listOfDependentsList.isEmpty() ? getCustomerIdsByIds(listOfDependentsList) : new ArrayList<>());
+            }
+
+            for (Customer customer : listOfCustomers) {
+                System.out.println(customer.toString());
+            }
+            System.out.println("Customers loaded from customers.txt");
+        } catch (Exception e){
+            System.out.println("Error: "+e.getMessage());
         }
-        this.listOfCustomers = customer;
-        System.out.println("Customers loaded from dataFile/customers.txt");
-    } catch (Exception e){
-        System.out.println("Error: "+e.getMessage());
     }
-}
+
     public void loadClaimsFromFile() {
-    try {
-        ArrayList<Claim> claim = new ArrayList<Claim>();
-        Scanner fileScanner = new Scanner(new File("dataFile/claims.txt"));
-        fileScanner.nextLine();
-        while (fileScanner.hasNext()) {
-            String line = fileScanner.nextLine();
-            StringTokenizer stringTokenizer = new StringTokenizer(line, ",");
-            String ID = stringTokenizer.nextToken();
-            String claimDate = stringTokenizer.nextToken();
-            String insuredPersonId = stringTokenizer.nextToken();
-            String cardNumberStr = stringTokenizer.nextToken();
-            String examDate = stringTokenizer.nextToken();
-            String documents = stringTokenizer.nextToken().replace("[", "").replace("]", "");
-            String amount = stringTokenizer.nextToken();
-            String status = stringTokenizer.nextToken();
-            String receiverBankingInfo = stringTokenizer.nextToken();
+        try {
+            ArrayList<Claim> claim = new ArrayList<Claim>();
+            Scanner fileScanner = new Scanner(new File("dataFile/claims.txt"));
+            fileScanner.nextLine();
+            while (fileScanner.hasNext()) {
+                String line = fileScanner.nextLine();
+                StringTokenizer stringTokenizer = new StringTokenizer(line, ",");
+                String ID = stringTokenizer.nextToken();
+                String claimDate = stringTokenizer.nextToken();
+                String insuredPersonId = stringTokenizer.nextToken();
+                String cardNumberStr = stringTokenizer.nextToken();
+                String examDate = stringTokenizer.nextToken();
+                String documents = stringTokenizer.nextToken().replace("[", "").replace("]", "");
+                String amount = stringTokenizer.nextToken();
+                String status = stringTokenizer.nextToken();
+                String receiverBankingInfo = stringTokenizer.nextToken();
 
-            // Split documents by comma and space
-            String[] documentsArray = documents.split(", ");
+                // Split documents by comma and space
+                String[] documentsArray = documents.split(", ");
 
-            // Retrieve or create Customer and InsuranceCard objects
-            Customer insuredPerson = getCustomerById(insuredPersonId);
-            InsuranceCard cardNumber = getInsuranceCardByNumber(cardNumberStr);
+                // Retrieve or create Customer and InsuranceCard objects
+                Customer insuredPerson = getCustomerById(insuredPersonId);
+                InsuranceCard cardNumber = getInsuranceCardByNumber(cardNumberStr);
 
-            claim.add(new Claim(
-                    ID,
-                    new SimpleDateFormat("dd-MM-yyyy").parse(claimDate),
-                    insuredPerson,
-                    cardNumber,
-                    new SimpleDateFormat("dd-MM-yyyy").parse(examDate),
-                    Arrays.asList(documentsArray),
-                    Double.parseDouble(amount),
-                    status,
-                    receiverBankingInfo));
+                claim.add(new Claim(
+                        ID,
+                        new SimpleDateFormat("dd-MM-yyyy").parse(claimDate),
+                        insuredPerson,
+                        cardNumber,
+                        new SimpleDateFormat("dd-MM-yyyy").parse(examDate),
+                        Arrays.asList(documentsArray),
+                        Double.parseDouble(amount),
+                        status,
+                        receiverBankingInfo));
 
+            }
+            this.listOfClaims = claim;
+            for (Claim claim1 : listOfClaims) {
+                System.out.println(claim1.toString());
+            }
+            System.out.println("Claims loaded from dataFile/claims.txt");
+        } catch (Exception e){
+            System.out.println("Error: "+e.getMessage());
         }
-        this.listOfClaims = claim;
-//        for (Claim claim1 : listOfClaims) {
-//            System.out.println(claim1);
-//        }
-
-        System.out.println("Claims loaded from dataFile/claims.txt");
-    } catch (Exception e){
-        System.out.println("Error: "+e.getMessage());
     }
-}
+
     private synchronized String generateUniqueClaimID() {
         int maxAssignedNumber = 0;
         for (Claim claim : listOfClaims) {
@@ -171,47 +260,35 @@ public class ClaimController implements ClaimProcessManager {
         return false;
     }
 
-//    public void saveClaimsToFile() {
-//        File file = new File("dataFile/claims.txt");
-//        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
-//            for (Claim claim : listOfClaims) {
-//                writer.write(claim.toFileString());
-//                writer.newLine();
-//            }
-//            System.out.println("Claims have been saved to " + file.getPath());
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//    }
-
     public void writeClaimsToFile() {
-    try (PrintWriter writer = new PrintWriter(new FileWriter("dataFile/claims.txt"))) {
-        // Write the CSV header
-        writer.println("ID,ClaimDate,InsuredPerson,CardNumber,ExamDate,ListofDocuments,Amount,Status,ReceiverBankingInfor");
+        try (PrintWriter writer = new PrintWriter(new FileWriter("dataFile/claims.txt"))) {
+            // Write the CSV header
+            writer.println("ID,ClaimDate,InsuredPerson,CardNumber,ExamDate,ListofDocuments,Amount,Status,ReceiverBankingInfor");
 
-        // Write claim records
-        for (Claim claim : listOfClaims) {
-            String formattedClaimDate = DateUtils.formatDate(claim.getClaimDate()); // Use utility method to format date
-            String formattedExamDate = DateUtils.formatDate(claim.getExamDate()); // Use utility method to format date
-            String documents = String.join(";", claim.getDocuments());
+            // Write claim records
+            for (Claim claim : listOfClaims) {
+                String formattedClaimDate = DateUtils.formatDate(claim.getClaimDate()); // Use utility method to format date
+                String formattedExamDate = DateUtils.formatDate(claim.getExamDate()); // Use utility method to format date
+                String documents = String.join(";", claim.getDocuments());
 
-            writer.println(String.format("%s,%s,%s,%s,%s,%s,%s,%s,%s",
-                    claim.getId(),
-                    formattedClaimDate, // Use formatted claim date
-                    claim.getInsuredPerson().getFullName(), // Assuming getInsuredPerson returns a Customer object with getFullName()
-                    claim.getCardNumber().getCardNumber(), // Assuming getCardNumber returns an InsuranceCard object with getCardNumber()
-                    formattedExamDate, // Use formatted exam date
-                    documents, // Joined list of documents with semicolon
-                    claim.getClaimAmount(),
-                    claim.getStatus(),
-                    claim.getReceiverBankingInfo()
-            ));
+                writer.println(String.format("%s,%s,%s,%s,%s,%s,%s,%s,%s",
+                        claim.getId(),
+                        formattedClaimDate, // Use formatted claim date
+                        claim.getInsuredPerson().getFullName(), // Assuming getInsuredPerson returns a Customer object with getFullName()
+                        claim.getCardNumber().getCardNumber(), // Assuming getCardNumber returns an InsuranceCard object with getCardNumber()
+                        formattedExamDate, // Use formatted exam date
+                        documents, // Joined list of documents with semicolon
+                        claim.getClaimAmount(),
+                        claim.getStatus(),
+                        claim.getReceiverBankingInfo()
+                ));
+            }
+            System.out.println("Claims have been written to " + "dataFile/claims.txt");
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        System.out.println("Claims have been written to " + "dataFile/claims.txt");
-    } catch (IOException e) {
-        e.printStackTrace();
     }
-}
+
     public class DateUtils {
         public static String formatDate(Date date) {
             SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy");

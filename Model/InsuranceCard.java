@@ -1,5 +1,6 @@
 package Model;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class InsuranceCard {
@@ -49,5 +50,14 @@ public class InsuranceCard {
 
     public void setExpirationDate(Date expirationDate) {
         this.expirationDate = expirationDate;
+    }
+    public String toString() {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+        return "InsuranceCard{" +
+                "cardNumber='" + cardNumber + '\'' +
+                ", cardHolder='" + cardHolder + '\'' +
+                ", policyOwner='" + policyOwner + '\'' +
+                ", expirationDate=" + dateFormat.format(expirationDate) +
+                '}';
     }
 }
