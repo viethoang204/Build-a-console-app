@@ -16,7 +16,7 @@ public class Menu {
     private ClaimController claimController = ClaimController.getInstance();
 
     public Menu(){
-        claimController.loadClaimsFromFile();
+
     }
 
     public void view(){
@@ -49,60 +49,60 @@ public class Menu {
             switch (choice) {
                 case 1:
                     try {
-    this.printClaimInfo(claimController.getAll(), true);
-    System.out.println("=====Create new claim=====");
-    SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy");
-    Date claimdate = null;
-    while (claimdate == null) {
-        try {
-            System.out.print("Enter claim date (dd-MM-yyyy): ");
-            claimdate = formatter.parse(scanner.nextLine());
-        } catch (Exception e) {
-            System.out.println("Invalid date format. Please try again.");
-        }
-    }
+                        this.printClaimInfo(claimController.getAll(), true);
+                        System.out.println("=====Create new claim=====");
+                        SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy");
+                        Date claimdate = null;
+                        while (claimdate == null) {
+                            try {
+                                System.out.print("Enter claim date (dd-MM-yyyy): ");
+                                claimdate = formatter.parse(scanner.nextLine());
+                            } catch (Exception e) {
+                                System.out.println("Invalid date format. Please try again.");
+                            }
+                        }
 
-    System.out.print("Enter insured person: ");
-    Customer insuredperson = new Customer(scanner.nextLine());
-    insuredperson.setFullName(scanner.nextLine());
+                        System.out.print("Enter insured person: ");
+                        Customer insuredperson = new Customer(scanner.nextLine());
+                        insuredperson.setFullName(scanner.nextLine());
 
-    System.out.print("Enter card number: ");
-    InsuranceCard cardnumber = new InsuranceCard(scanner.nextLine());
-    cardnumber.setCardNumber(scanner.nextLine());
+                        System.out.print("Enter card number: ");
+                        InsuranceCard cardnumber = new InsuranceCard(scanner.nextLine());
+                        cardnumber.setCardNumber(scanner.nextLine());
 
-    Date examdate = null;
-    while (examdate == null) {
-        try {
-            System.out.print("Enter exam date (dd-MM-yyyy): ");
-            examdate = formatter.parse(scanner.nextLine());
-        } catch (Exception e) {
-            System.out.println("Invalid date format. Please try again.");
-        }
-    }
+                        Date examdate = null;
+                        while (examdate == null) {
+                            try {
+                                System.out.print("Enter exam date (dd-MM-yyyy): ");
+                                examdate = formatter.parse(scanner.nextLine());
+                            } catch (Exception e) {
+                                System.out.println("Invalid date format. Please try again.");
+                            }
+                        }
 
-    System.out.print("Enter list of documents (comma separated): ");
-    List<String> listofdocuments = Arrays.asList(scanner.nextLine().split(","));
+                        System.out.print("Enter list of documents (comma separated): ");
+                        List<String> listofdocuments = Arrays.asList(scanner.nextLine().split(","));
 
-    Double amount = null;
-    while (amount == null) {
-        try {
-            System.out.print("Enter claim amount($): ");
-            amount = Double.parseDouble(scanner.nextLine());
-        } catch (NumberFormatException e) {
-            System.out.println("Invalid number format. Please try again.");
-        }
-    }
+                        Double amount = null;
+                        while (amount == null) {
+                            try {
+                                System.out.print("Enter claim amount($): ");
+                                amount = Double.parseDouble(scanner.nextLine());
+                            } catch (NumberFormatException e) {
+                                System.out.println("Invalid number format. Please try again.");
+                            }
+                        }
 
-    System.out.print("Enter status: ");
-    String status = scanner.nextLine();
+                        System.out.print("Enter status: ");
+                        String status = scanner.nextLine();
 
-    System.out.print("Enter receiver banking info: ");
-    String receiverbankinginfor = scanner.nextLine();
+                        System.out.print("Enter receiver banking info: ");
+                        String receiverbankinginfor = scanner.nextLine();
 
-    claimController.add(claimdate, insuredperson, cardnumber, examdate, listofdocuments, amount, status, receiverbankinginfor);
-} catch (Exception e) {
-    System.out.println("An error occurred. Please try again");
-}
+                        claimController.add(claimdate, insuredperson, cardnumber, examdate, listofdocuments, amount, status, receiverbankinginfor);
+                    } catch (Exception e) {
+                        System.out.println("An error occurred. Please try again");
+                    }
                 case 2:
                     try {
                         this.printClaimInfo(claimController.getAll(), true);

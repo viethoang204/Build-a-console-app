@@ -1,20 +1,20 @@
 package Model;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Dependent extends Customer {
-    private PolicyHolder policyHolder;
 
-    public Dependent(String id, String fullName, InsuranceCard insuranceCard, PolicyHolder policyHolder) {
-        super(id, fullName, insuranceCard, new ArrayList<>(), new ArrayList<>());
-        this.policyHolder = policyHolder;
+    public Dependent(String id, String fullName, InsuranceCard insuranceCard, List<Claim> claims) {
+        super(id, fullName, insuranceCard, claims);
     }
 
-    public PolicyHolder getPolicyHolder() {
-        return policyHolder;
-    }
-
-    public void setPolicyHolder(PolicyHolder policyHolder) {
-        this.policyHolder = policyHolder;
+    public String toString() {
+        return "Dependent{" +
+                "id='" + super.getId() + '\'' +
+                ", fullName='" + super.getFullName() + '\'' +
+                ", insuranceCardNumber='" + (super.getInsuranceCard() != null ? super.getInsuranceCard() : "N/A") + '\'' +
+                ", claims=" + super.getClaims() +
+                '}';
     }
 }
