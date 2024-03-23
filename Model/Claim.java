@@ -107,8 +107,8 @@ public String toString() {
     return "Claim{" +
             "id='" + id + '\'' +
             ", claimDate=" + dateFormat.format(claimDate) +
-            ", insuredPersonId='" + (insuredPerson != null ? insuredPerson.getId() : "N/A") + '\'' +
-            ", cardNumber='" + (cardNumber != null ? cardNumber.getCardNumber() : "N/A") + '\'' +
+            ", insuredPersonId='" + insuredPerson +
+            ", cardNumber='" + cardNumber +
             ", examDate=" + dateFormat.format(examDate) +
             ", documents=" + documents +
             ", claimAmount=" + claimAmount +
