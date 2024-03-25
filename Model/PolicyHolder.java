@@ -35,5 +35,9 @@ public String toString() {
             ", claims=" + super.getClaims() +
             ", dependents=" + listOfDependents +
             '}';
+
 }
+    public List<Dependent> getListOfDependents() {
+        return this.dependents;
+    }
 }

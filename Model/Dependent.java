@@ -9,6 +9,7 @@ public class Dependent extends Customer {
         super(id, fullName, insuranceCard, claims);
     }
 
+
     public String toString() {
         return "Dependent{" +
                 "id='" + super.getId() + '\'' +
