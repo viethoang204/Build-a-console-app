@@ -57,9 +57,10 @@ public class Customer {
         return "Customer{" +
                 "id='" + id + '\'' +
                 ", fullName='" + fullName + '\'' +
-//                ", insuranceCardNumber='" + (insuranceCard != null ? insuranceCard.getCardNumber() : "N/A") + '\'' +
                 ", insuranceCardNumber='" + (insuranceCard != null ? insuranceCard : "N/A") + '\'' +
                 ", claims=" + claims +
                 '}';
     }
+
+
 }

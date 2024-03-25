@@ -17,6 +17,10 @@ public class CustomerController {
         return instance;
     }
 
+    public Customer getOne(String id){
+        return claimController.getListOfCustomers().stream().filter(customer -> customer.getId().equals(id)).findFirst().orElse(null);
+    }
+
     public CustomerController() {
         this.claimController = ClaimController.getInstance();
     }
@@ -36,4 +40,14 @@ public class CustomerController {
     public List<Customer> getAll() {
         return this.getListOfCustomers();
     }
+
+    public boolean deleteCustomer(String id){
+        if (claimController.getListOfCustomers().removeIf(customer -> customer.getId().equals(id))) {
+            claimController.writeCustomersToFile();
+            return true;
+        };
+        return false;
+    }
+
+
 }

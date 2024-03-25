@@ -253,7 +253,7 @@ public class ClaimController implements ClaimProcessManager {
     public void writeClaimsToFile() {
         try (PrintWriter writer = new PrintWriter(new FileWriter("dataFile/claims.txt"))) {
             // Write the CSV header
-            writer.println("ID,ClaimDate,InsuredPerson,CardNumber,ExamDate,ListofDocuments,Amount,Status,ReceiverBankingInfor");
+            writer.println("ID,Claim Date,Insured Person,Card Number,Exam Date,List of Documents,Amount,Status,Receiver Banking Infor");
 
             // Write claim records
             for (Claim claim : listOfClaims) {
@@ -274,7 +274,48 @@ public class ClaimController implements ClaimProcessManager {
                         claim.getReceiverBankingInfo().printInfor()
                 ));
             }
-            System.out.println("Claims have been written to " + "dataFile/claims.txt");
+//            System.out.println("Claim has been written to " + "dataFile/claims.txt");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void writeCustomersToFile() {
+        try (PrintWriter writer = new PrintWriter(new FileWriter("dataFile/customers.txt"))) {
+            // Write the CSV header
+            writer.println("ID,Full Name,Insurance Card,List Of Claims,List Of Dependents");
+
+            // Write claim records
+            for (Customer customer : listOfCustomers) {
+
+                writer.println(String.format("%s,%s,%s,[%s],[%s]",
+                        customer.getId(),
+                        customer.getFullName(),
+                        customer.getInsuranceCard().getCardNumber(),
+                        customer.getClaims().stream().map(Claim::getId).collect(Collectors.joining(";")),
+                        customer instanceof PolicyHolder ? ((PolicyHolder) customer).getListOfDependents().stream().map(Dependent::getId).collect(Collectors.joining(";")) : ""
+                ));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void writeInsuranceCardoFile() {
+        try (PrintWriter writer = new PrintWriter(new FileWriter("dataFile/insuranceCards.txt"))) {
+            // Write the CSV header
+            writer.println("Card Number,Card Holder,Policy Owner,Expiration Date");
+
+            // Write claim records
+            for (InsuranceCard insurancecard : listOfInsuranceCards) {
+                writer.println(String.format("%s,%s,%s,%s",
+                        insurancecard.getCardNumber(),
+                        insurancecard.getCardHolder().getId(),
+                        insurancecard.getPolicyOwner(),
+                        DateUtils.formatDate(insurancecard.getExpirationDate())
+                ));
+            }
+//            System.out.println("Insurance card has been written to " + "insuranceCards.txt.txt");
         } catch (IOException e) {
             e.printStackTrace();
         }
