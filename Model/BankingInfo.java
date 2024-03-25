@@ -11,6 +11,11 @@ public class BankingInfo {
         this.number = number;
     }
 
+    public String printInfor() {
+        String infor_bank = bank + "-" + name + "-" + number;
+        return infor_bank;
+    }
+
     public String getBank() {
         return bank;
     }
