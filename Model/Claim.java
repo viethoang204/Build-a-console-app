@@ -14,7 +14,7 @@ public class Claim {
     private List<String> documents;
     private double claimAmount;
     private String status; // New, Processing, Done
-    private String receiverBankingInfo; // Bank – Name – Number
+    private BankingInfo receiverBankingInfo; // Bank – Name – Number
 
     public InsuranceCard getCardNumber() {
         return cardNumber;
@@ -24,7 +24,7 @@ public class Claim {
         this.cardNumber = cardNumber;
     }
 
-    public Claim(String id, Date claimDate, Customer insuredPerson, InsuranceCard cardNumber, Date examDate, List<String> documents, double claimAmount, String status, String receiverBankingInfo) {
+    public Claim(String id, Date claimDate, Customer insuredPerson, InsuranceCard cardNumber, Date examDate, List<String> documents, double claimAmount, String status, BankingInfo receiverBankingInfo) {
         this.id = id;
         this.claimDate = claimDate;
         this.insuredPerson = insuredPerson;
@@ -93,11 +93,11 @@ public class Claim {
         this.status = status;
     }
 
-    public String getReceiverBankingInfo() {
+    public BankingInfo getReceiverBankingInfo() {
         return receiverBankingInfo;
     }
 
-    public void setReceiverBankingInfo(String receiverBankingInfo) {
+    public void setReceiverBankingInfo(BankingInfo receiverBankingInfo) {
         this.receiverBankingInfo = receiverBankingInfo;
     }
 
