@@ -155,50 +155,69 @@ public class ClaimController implements ClaimProcessManager {
     }
 
     public void loadClaimsFromFile() {
-    try {
-        ArrayList<Claim> claim = new ArrayList<Claim>();
-        Scanner fileScanner = new Scanner(new File("dataFile/claims.txt"));
-        fileScanner.nextLine();
-        while (fileScanner.hasNext()) {
-            String line = fileScanner.nextLine();
-            StringTokenizer stringTokenizer = new StringTokenizer(line, ",");
-            String ID = stringTokenizer.nextToken();
-            String claimDate = stringTokenizer.nextToken();
-            Customer insuredPerson = getCustomerById(stringTokenizer.nextToken().trim());
-            InsuranceCard cardNumber = getInsuranceCardById(stringTokenizer.nextToken().trim());
-            String examDate = stringTokenizer.nextToken();
-            String documents = stringTokenizer.nextToken().replace("[", "").replace("]", "");
-            String amount = stringTokenizer.nextToken();
-            String status = stringTokenizer.nextToken();
-            String[] bankingInfoParts = stringTokenizer.nextToken().split("-");
-            if (bankingInfoParts.length == 3) { // Ensure there are exactly 3 parts
-                String bank = bankingInfoParts[0].trim();
-                String name = bankingInfoParts[1].trim();
-                String number = bankingInfoParts[2].trim();
-                BankingInfo receiverBankingInfo = new BankingInfo(bank, name, number);
+        try {
+            ArrayList<Claim> claims = new ArrayList<>();
+            Scanner fileScanner = new Scanner(new File("dataFile/claims.txt"));
+            fileScanner.nextLine(); // Skip header line
+            while (fileScanner.hasNextLine()) {
+                String line = fileScanner.nextLine();
+                String[] parts = line.split(",");
+                if (parts.length == 9) {
+                    String ID = parts[0].trim();
+                    String claimDate = parts[1].trim();
+                    String insuredPersonId = parts[2].trim();
+                    String cardNumber = parts[3].trim();
+                    String examDate = parts[4].trim();
+                    String documents = parts[5].trim().replace("[", "").replace("]", "");
+                    double amount = Double.parseDouble(parts[6].trim());
+                    String status = parts[7].trim();
+                    String receiverBankingInfoStr = parts[8].trim();
 
-                // Split documents by comma and space
-                String[] documentsArray = documents.split(", ");
+                    Customer insuredPerson = null;
+                    InsuranceCard insuranceCard = null;
 
-                claim.add(new Claim(
-                        ID,
-                        new SimpleDateFormat("dd-MM-yyyy").parse(claimDate),
-                        insuredPerson,
-                        cardNumber,
-                        new SimpleDateFormat("dd-MM-yyyy").parse(examDate),
-                        Arrays.asList(documentsArray),
-                        Double.parseDouble(amount),
-                        status,
-                        receiverBankingInfo));
-            } else {
-                System.out.println("Banking Information is invalid");
+                    // If Insured Person and Card Number are not provided, set them to null
+                    if (!insuredPersonId.equals("null") && !cardNumber.equals("null")) {
+                        insuredPerson = getCustomerById(insuredPersonId);
+                        insuranceCard = getInsuranceCardById(cardNumber);
+                    }
+
+                    String[] bankingInfoParts = receiverBankingInfoStr.split("-");
+                    if (bankingInfoParts.length == 3) {
+                        String bank = bankingInfoParts[0].trim();
+                        String name = bankingInfoParts[1].trim();
+                        String number = bankingInfoParts[2].trim();
+                        BankingInfo receiverBankingInfo = new BankingInfo(bank, name, number);
+
+                        // Split documents by semicolon and remove leading/trailing whitespace
+                        String[] documentsArray = documents.split(";");
+                        for (int i = 0; i < documentsArray.length; i++) {
+                            documentsArray[i] = documentsArray[i].trim();
+                        }
+
+                        claims.add(new Claim(
+                                ID,
+                                new SimpleDateFormat("dd-MM-yyyy").parse(claimDate),
+                                insuredPerson,
+                                insuranceCard,
+                                new SimpleDateFormat("dd-MM-yyyy").parse(examDate),
+                                Arrays.asList(documentsArray),
+                                amount,
+                                status,
+                                receiverBankingInfo));
+                    } else {
+                        System.out.println("Banking Information is invalid");
+                    }
+                } else {
+                    System.out.println("Invalid claim record: " + line);
+                }
             }
+            this.listOfClaims = claims;
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
         }
-        this.listOfClaims = claim;
-    } catch (Exception e){
-        System.out.println("Error: "+e.getMessage());
     }
-}
+
 
     public void loadInsuranceCardsFromFile() {
         loadCustomsFromFile();
@@ -274,7 +293,41 @@ public class ClaimController implements ClaimProcessManager {
                         claim.getReceiverBankingInfo().printInfor()
                 ));
             }
-//            System.out.println("Claim has been written to " + "dataFile/claims.txt");
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void writeClaimsToFile1() {
+        try (PrintWriter writer = new PrintWriter(new FileWriter("dataFile/claims.txt"))) {
+            // Write the CSV header
+            writer.println("ID,Claim Date,Insured Person,Card Number,Exam Date,List of Documents,Amount,Status,Receiver Banking Infor");
+
+            // Write claim records
+            for (Claim claim : listOfClaims) {
+                String formattedClaimDate = DateUtils.formatDate(claim.getClaimDate()); // Use utility method to format date
+                String formattedExamDate = DateUtils.formatDate(claim.getExamDate()); // Use utility method to format date
+                // Joining documents with semicolon and wrapping with square brackets
+                String documents = String.join(";", claim.getDocuments()) ;
+
+                // Check if insured person and card number are null
+                String insuredPersonId = claim.getInsuredPerson() != null ? claim.getInsuredPerson().getId() : null;
+                String cardNumber = claim.getCardNumber() != null ? claim.getCardNumber().getCardNumber() : null;
+
+                writer.println(String.format("%s,%s,%s,%s,%s,[%s],%s,%s,%s",
+                        claim.getId(),
+                        formattedClaimDate, // Use formatted claim date
+                        insuredPersonId,
+                        cardNumber,
+                        formattedExamDate, // Use formatted exam date
+                        documents, // Documents string already includes square brackets
+                        claim.getClaimAmount(),
+                        claim.getStatus(),
+                        claim.getReceiverBankingInfo().printInfor()
+                ));
+            }
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -285,21 +338,43 @@ public class ClaimController implements ClaimProcessManager {
             // Write the CSV header
             writer.println("ID,Full Name,Insurance Card,List Of Claims,List Of Dependents");
 
-            // Write claim records
+            // Write customer records
             for (Customer customer : listOfCustomers) {
+                // Building the dependent string
+                String dependents = "";
+                if (customer instanceof PolicyHolder && !((PolicyHolder) customer).getListOfDependents().isEmpty()) {
+                    dependents = ((PolicyHolder) customer).getListOfDependents().stream()
+                            .map(Dependent::getId)
+                            .collect(Collectors.joining(";"));
+                    dependents = "[" + dependents + "]"; // Only add brackets if dependents are present
+                }
 
-                writer.println(String.format("%s,%s,%s,[%s],[%s]",
+                // Preparing the claims string, including brackets regardless of content
+                String claims = "[" + customer.getClaims().stream().map(Claim::getId).collect(Collectors.joining(";")) + "]";
+
+                // Formatting the output line
+                // Conditional inclusion of the dependent section, avoiding a trailing comma if dependents are empty
+                String outputLine = String.format("%s,%s,%s,%s",
                         customer.getId(),
                         customer.getFullName(),
                         customer.getInsuranceCard().getCardNumber(),
-                        customer.getClaims().stream().map(Claim::getId).collect(Collectors.joining(";")),
-                        customer instanceof PolicyHolder ? ((PolicyHolder) customer).getListOfDependents().stream().map(Dependent::getId).collect(Collectors.joining(";")) : ""
-                ));
+                        claims);
+
+                // Only add dependents if non-empty
+                if (!dependents.isEmpty()) {
+                    outputLine += "," + dependents;
+                }
+
+                writer.println(outputLine);
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
+
+
+
 
     public void writeInsuranceCardoFile() {
         try (PrintWriter writer = new PrintWriter(new FileWriter("dataFile/insuranceCards.txt"))) {
@@ -332,7 +407,6 @@ public class ClaimController implements ClaimProcessManager {
     public ArrayList<InsuranceCard> getListOfInsuranceCards() {
         return listOfInsuranceCards;
     }
-
 
     public class DateUtils {
         public static String formatDate(Date date) {

@@ -48,6 +48,7 @@ public class Menu {
     }
 
     private void claimMenu(){
+//        claimController.loadClaimsFromFile();
         int choice = 0;
         do {
             System.out.println("\033[1m===== CLAIM MANAGER MENU =====\033[0m");
@@ -202,7 +203,7 @@ public class Menu {
         } while (choice!=5);
     }
 
-    private void cardMenu(){
+    private void cardMenu() {
         int choice = 0;
         do {
             System.out.println("\033[1m===== CARD MANAGER =====\033[0m");
@@ -212,7 +213,6 @@ public class Menu {
             System.out.println("4. Update Insurance Card");
             System.out.println("5. Return");
             System.out.print("Enter your choice: ");
-
 
             try {
                 choice = scanner.nextInt();
@@ -240,35 +240,73 @@ public class Menu {
                             scanner.nextLine(); // Consume the invalid input
                             continue; // Skip the rest of the loop and start over
                         }
-                        switch (choice){
-                            case 1: detailInsuranceCard(); break;
+                        switch (choice) {
+                            case 1:
+                                detailInsuranceCard();
+                                break;
                             case 2:
+                                // Implementation for Sorting
+                                break;
                             case 3:
+                                // Implementation for Export To File
+                                break;
                             case 4:
                                 System.out.println("Returning...");
+                                break;
                         }
                     } while (choice != 4);
                     break;
                 case 2:
+                    // Implementation for Add Customer and his/her Insurance Card
+                    break;
                 case 3:
                     try {
                         this.printCardsInfo(insuranceCardController.getAll(), true);
-                        System.out.print("Enter insurance card ID to remove: ");
+                        System.out.println("*** Notice: Deleting a card also removes their owner information ***");
+                        System.out.println("*** Card Information will be erased from all related claims for management ***");
+                        System.out.print("Enter customer ID to remove: ");
                         String id = scanner.nextLine();
-                        if (insuranceCardController.delete(id)) {
-                            System.out.println("Removed insurance card " + id + " from the system");
+
+                        String customerId = null;
+                        for (Customer customer : claimController.getListOfCustomers()) {
+                            if (customer.getInsuranceCard() != null && customer.getInsuranceCard().getCardNumber().equals(id.trim())) {
+                                customerId = customer.getId();
+                                break;
+                            }
+                        }
+
+                        Customer customer = customerController.getOne(customerId);
+                        if (customer != null) {
+                            if (customer instanceof Dependent) {
+//                                System.out.println("*** Note: Deleting a dependent's card will also remove them from the list of dependents of the associated policy holder. ***");
+                                if (customerController.deleteCustomerDPD(customerId)) {
+                                    System.out.println("Removed card " + id + " from the system");
+                                } else {
+                                    System.out.println("Invalid ID, please try again");
+                                }
+                            } else if (customer instanceof PolicyHolder) {
+                                System.out.println("*** Note: Deleting a policyholder's card will also remove all of their dependents' cards ***");
+                                if (customerController.deleteCustomerPLC(customerId)) {
+                                    System.out.println("Removed card " + id + " from the system");
+                                } else {
+                                    System.out.println("Invalid ID, please try again");
+                                }
+                            }
                         } else {
                             System.out.println("Invalid ID, please try again");
                         }
-                    }catch (Exception e){
+                    } catch (Exception e) {
                         System.out.println("An error occurred, please try again.");
                     }
                     break;
                 case 4:
+                    // Implementation for Update Insurance Card
+                    break;
                 case 5:
                     System.out.println("Returning...");
+                    break;
             }
-        } while (choice!=5);
+        } while (choice != 5);
     }
 
     private void customerMenu(){
@@ -321,14 +359,31 @@ public class Menu {
                 case 3:
                     try {
                         this.printCustomersInfo(customerController.getAll(), true);
+                        System.out.println("*** Notice: Deleting a customer also removes their insurance card ***");
+                        System.out.println("*** Customer details will be erased from all related claims for management ***");
                         System.out.print("Enter customer ID to remove (c-xxxxxxx): ");
                         String id = scanner.nextLine();
-                        if (customerController.deleteCustomer(id)) {
-                            System.out.println("Removed customer " + id + " from the system");
+                        Customer customer = customerController.getOne(id);
+                        if (customer != null) {
+                            if (customer instanceof Dependent) {
+                                System.out.println("*** Note: Deleting a dependent will also remove them from the list of dependents of the associated policy holder. ***");
+                                if (customerController.deleteCustomerDPD(id)) {
+                                    System.out.println("Removed dependent " + id + " from the system");
+                                } else {
+                                    System.out.println("Invalid ID, please try again");
+                                }
+                            } else if (customer instanceof PolicyHolder) {
+                                System.out.println("*** Note: Deleting a policy holder will also remove all their dependents. ***");
+                                if (customerController.deleteCustomerPLC(id)) {
+                                    System.out.println("Removed policy holder " + id + " from the system");
+                                } else {
+                                    System.out.println("Invalid ID, please try again");
+                                }
+                            }
                         } else {
                             System.out.println("Invalid ID, please try again");
                         }
-                    }catch (Exception e){
+                    } catch (Exception e) {
                         System.out.println("An error occurred, please try again.");
                     }
                     break;
@@ -340,7 +395,7 @@ public class Menu {
     }
 
     private void detailClaim() {
-        System.out.print("Enter claim ID(f-xxxx): ");
+        System.out.print("Enter claim ID(f-xxxxxxxxxx): ");
         String claimId = scanner.nextLine();
         Claim claim = claimController.getOne(claimId);
         if (claim == null) {
@@ -675,8 +730,10 @@ public class Menu {
         for (Claim claim : claims) {
             maxLengths[0] = Math.max(maxLengths[0], claim.getId().length());
             maxLengths[1] = Math.max(maxLengths[1], formatDate(claim.getClaimDate()).length());
-            maxLengths[2] = Math.max(maxLengths[2], claim.getInsuredPerson().getFullName().length());
-            maxLengths[3] = Math.max(maxLengths[3], claim.getCardNumber().getCardNumber().length());
+            String insuredPersonName = claim.getInsuredPerson() != null ? claim.getInsuredPerson().getFullName() : "no data";
+            String cardNumber = claim.getCardNumber() != null ? claim.getCardNumber().getCardNumber() : "no data";
+            maxLengths[2] = Math.max(maxLengths[2], insuredPersonName.length());
+            maxLengths[3] = Math.max(maxLengths[3], cardNumber.length());
             maxLengths[4] = Math.max(maxLengths[4], formatDate(claim.getExamDate()).length());
             maxLengths[5] = Math.max(maxLengths[5], String.join(", ", claim.getDocuments()).length());
             maxLengths[6] = Math.max(maxLengths[6], Double.toString(claim.getClaimAmount()).length());
@@ -703,12 +760,15 @@ public class Menu {
         // Print the data rows
         for (Claim claim : claims) {
             String formattedAmount = decimalFormat.format(claim.getClaimAmount());
+            String insuredPersonName = claim.getInsuredPerson() != null ? claim.getInsuredPerson().getFullName() : "no data";
+            String cardNumber = claim.getCardNumber() != null ? claim.getCardNumber().getCardNumber() : "no data";
+
 
             System.out.printf(headerFormat,
                     claim.getId(),
                     formatDate(claim.getClaimDate()),
-                    claim.getInsuredPerson().getFullName(),
-                    claim.getCardNumber().getCardNumber(),
+                    insuredPersonName,
+                    cardNumber,
                     formatDate(claim.getExamDate()),
                     String.join(", ", claim.getDocuments()),
                     formattedAmount, // Use the DecimalFormat to format amount
@@ -871,9 +931,7 @@ public class Menu {
                         .map(Customer::getId)
                         .collect(Collectors.toList()));
             }
-//            else {
-//                dependentsText = "he/she is a dependent";
-//            }
+
             String title = customer instanceof PolicyHolder ? "Policy Holder" : "Dependent";
 
             System.out.printf(headerFormat,

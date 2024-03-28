@@ -41,7 +41,6 @@ public class InsuranceCardController {
     public InsuranceCard getOne(String insuranceCardNumber){
         return claimController.getListOfInsuranceCards().stream().filter(insuranceCard -> insuranceCard.getCardNumber().equals(insuranceCardNumber)).findFirst().orElse(null);
     }
-
     public boolean delete(String insuranceCardNumber){
         if(claimController.getListOfInsuranceCards().removeIf(insuranceCard -> insuranceCard.getCardNumber().equals(insuranceCardNumber))){
             claimController.writeInsuranceCardoFile();
@@ -49,5 +48,4 @@ public class InsuranceCardController {
         };
         return false;
     }
-
 }
