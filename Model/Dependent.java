@@ -40,4 +40,5 @@ public class Dependent extends Customer {
                 ", claims=" + super.getClaims() +
                 '}';
     }
+
 }

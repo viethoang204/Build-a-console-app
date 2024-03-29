@@ -91,7 +91,6 @@ public class CustomerController {
         return false;
     }
 
-
     public boolean deleteCustomerDPD(String id) {
         Customer customer = this.getOne(id);
         if (customer != null) {
@@ -137,4 +136,43 @@ public class CustomerController {
         }
         return false;
     }
+    public PolicyHolder addPolicyHolder(String fullName, InsuranceCard insuranceCard, List<Claim> claims, List<Dependent> dependents) {
+        String id = generateUniqueCustomerID();
+        PolicyHolder policyHolder = new PolicyHolder(id, fullName, insuranceCard, claims, dependents);
+        this.getListOfCustomers().add(policyHolder);
+        claimController.writeCustomersToFile();
+        return policyHolder;
+    }
+
+    public Dependent addDependent(String fullName, InsuranceCard insuranceCard, List<Claim> claims) {
+        String id = generateUniqueCustomerID();
+        Dependent dependent = new Dependent(id, fullName, insuranceCard, claims);
+        this.getListOfCustomers().add(dependent);
+        claimController.writeCustomersToFile();
+        return dependent;
+    }
+
+    private synchronized String generateUniqueCustomerID() {
+        int maxAssignedNumber = 0;
+        for (Customer customer : claimController.getListOfCustomers()) {
+            String containerID = customer.getId();
+            if (containerID.startsWith("c-")) {
+                try {
+                    // Correctly parsing the numeric part of the ID after "c-"
+                    int number = Integer.parseInt(containerID.substring(2));
+                    maxAssignedNumber = Math.max(maxAssignedNumber, number);
+                } catch (NumberFormatException e) {
+                    // Handle parsing error if necessary
+                }
+            }
+        }
+
+        // Increment to get the next number
+        int nextNumber = maxAssignedNumber + 1;
+        // Generate the next ID, adjusting for length if necessary
+        String nextID = String.format("c-%07d", nextNumber);
+
+        return nextID;
+    }
+
 }

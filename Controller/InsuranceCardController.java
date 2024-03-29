@@ -5,6 +5,7 @@ import Model.Customer;
 import Model.InsuranceCard;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class InsuranceCardController {
@@ -41,11 +42,20 @@ public class InsuranceCardController {
     public InsuranceCard getOne(String insuranceCardNumber){
         return claimController.getListOfInsuranceCards().stream().filter(insuranceCard -> insuranceCard.getCardNumber().equals(insuranceCardNumber)).findFirst().orElse(null);
     }
+
     public boolean delete(String insuranceCardNumber){
         if(claimController.getListOfInsuranceCards().removeIf(insuranceCard -> insuranceCard.getCardNumber().equals(insuranceCardNumber))){
             claimController.writeInsuranceCardoFile();
             return true;
         };
         return false;
+    }
+
+    public InsuranceCard add(String cardNumber, Customer cardHolder, String policyOwner, Date expirationDate) {
+        // Create a new InsuranceCard object
+        InsuranceCard newCard = new InsuranceCard(cardNumber, cardHolder, policyOwner, expirationDate);
+        this.getListOfInsuranceCards().add(newCard);
+//        claimController.writeInsuranceCardoFile();
+        return newCard;
     }
 }

@@ -340,29 +340,41 @@ public class ClaimController implements ClaimProcessManager {
 
             // Write customer records
             for (Customer customer : listOfCustomers) {
-                // Building the dependent string
+                // Initializing dependents string to be empty
                 String dependents = "";
-                if (customer instanceof PolicyHolder && !((PolicyHolder) customer).getListOfDependents().isEmpty()) {
-                    dependents = ((PolicyHolder) customer).getListOfDependents().stream()
-                            .map(Dependent::getId)
-                            .collect(Collectors.joining(";"));
-                    dependents = "[" + dependents + "]"; // Only add brackets if dependents are present
+                if (customer instanceof PolicyHolder) {
+                    List<Dependent> listOfDependents = ((PolicyHolder) customer).getListOfDependents();
+                    // Check if listOfDependents is not null and not empty before proceeding
+                    if (listOfDependents != null && !listOfDependents.isEmpty()) {
+                        dependents = listOfDependents.stream()
+                                .map(Dependent::getId)
+                                .collect(Collectors.joining(";"));
+                        dependents = "[" + dependents + "]";
+                    } else {
+                        // Add empty brackets if there are no dependents to ensure the record has 5 elements
+                        dependents = "[]";
+                    }
                 }
 
                 // Preparing the claims string, including brackets regardless of content
                 String claims = "[" + customer.getClaims().stream().map(Claim::getId).collect(Collectors.joining(";")) + "]";
 
-                // Formatting the output line
-                // Conditional inclusion of the dependent section, avoiding a trailing comma if dependents are empty
-                String outputLine = String.format("%s,%s,%s,%s",
-                        customer.getId(),
-                        customer.getFullName(),
-                        customer.getInsuranceCard().getCardNumber(),
-                        claims);
-
-                // Only add dependents if non-empty
-                if (!dependents.isEmpty()) {
-                    outputLine += "," + dependents;
+                // Formatting the output line for PolicyHolder and Dependent differently
+                String outputLine;
+                if (customer instanceof PolicyHolder) {
+                    outputLine = String.format("%s,%s,%s,%s,%s",
+                            customer.getId(),
+                            customer.getFullName(),
+                            customer.getInsuranceCard().getCardNumber(),
+                            claims,
+                            dependents); // Always include dependents field for PolicyHolder
+                } else {
+                    // For Dependents, no need to add an empty dependents field
+                    outputLine = String.format("%s,%s,%s,%s",
+                            customer.getId(),
+                            customer.getFullName(),
+                            customer.getInsuranceCard().getCardNumber(),
+                            claims);
                 }
 
                 writer.println(outputLine);
@@ -374,8 +386,6 @@ public class ClaimController implements ClaimProcessManager {
 
 
 
-
-
     public void writeInsuranceCardoFile() {
         try (PrintWriter writer = new PrintWriter(new FileWriter("dataFile/insuranceCards.txt"))) {
             // Write the CSV header
@@ -383,14 +393,14 @@ public class ClaimController implements ClaimProcessManager {
 
             // Write claim records
             for (InsuranceCard insurancecard : listOfInsuranceCards) {
+                String cardHolderId = insurancecard.getCardHolder() != null ? insurancecard.getCardHolder().getId() : null;
                 writer.println(String.format("%s,%s,%s,%s",
                         insurancecard.getCardNumber(),
-                        insurancecard.getCardHolder().getId(),
+                        cardHolderId,
                         insurancecard.getPolicyOwner(),
                         DateUtils.formatDate(insurancecard.getExpirationDate())
                 ));
             }
-//            System.out.println("Insurance card has been written to " + "insuranceCards.txt.txt");
         } catch (IOException e) {
             e.printStackTrace();
         }

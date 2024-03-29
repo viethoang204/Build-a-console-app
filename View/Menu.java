@@ -7,6 +7,7 @@ import Model.*;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -72,7 +73,7 @@ public class Menu {
                 case 1:
                     this.printClaimsInfo(claimController.getAll(), false);
                     do {
-                        System.out.println("1. View Detail Of A Customer");
+                        System.out.println("1. View Detail Of A Claim");
                         System.out.println("2. Sorting");
                         System.out.println("3. Export To File");
                         System.out.println("4. Return");
@@ -96,6 +97,13 @@ public class Menu {
                     break;
                 case 2:
                     try {
+                        System.out.print("Is the customer for this claim already in the system? (y/n): ");
+                        String inSystem = scanner.nextLine().trim().toLowerCase();
+                        if (!inSystem.equals("y")) {
+                            System.out.println("You need to add the customer and his/her insurance card first.");
+                            addCustomerAndCard();
+                            break;
+                        }
                         this.printClaimsInfo(claimController.getAll(), true);
                         System.out.println("===== CREATE NEW CLAIM =====");
                         SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy");
@@ -109,6 +117,8 @@ public class Menu {
                             }
                         }
 
+                        this.printCustomersAndCardsInfo(claimController.getListOfCustomers(), claimController.getListOfInsuranceCards(), true);
+
                         Customer insuredperson = null;
                         String customerId = ""; // Initialize customerId outside the loop
                         while (insuredperson == null) {
@@ -119,7 +129,6 @@ public class Menu {
                                 System.out.println("Customer not found with the given ID. Please try again.");
                             }
                         }
-
 
                         InsuranceCard cardnumber = insuredperson.getInsuranceCard();
                         if (cardnumber == null) {
@@ -139,7 +148,7 @@ public class Menu {
                             }
                         }
 
-                        System.out.print("Enter list of documents (comma separated): ");
+                        System.out.print("Enter a list of document names without file extensions, separated by commas: ");
                         List<String> rawListOfDocuments = Arrays.asList(scanner.nextLine().split(","));
                         Set<String> documentSet = new LinkedHashSet<>(rawListOfDocuments);
                         List<String> listofdocuments = new ArrayList<>(documentSet);
@@ -256,9 +265,7 @@ public class Menu {
                         }
                     } while (choice != 4);
                     break;
-                case 2:
-                    // Implementation for Add Customer and his/her Insurance Card
-                    break;
+                case 2: addCustomerAndCard(); break;
                 case 3:
                     try {
                         this.printCardsInfo(insuranceCardController.getAll(), true);
@@ -278,18 +285,35 @@ public class Menu {
                         Customer customer = customerController.getOne(customerId);
                         if (customer != null) {
                             if (customer instanceof Dependent) {
-//                                System.out.println("*** Note: Deleting a dependent's card will also remove them from the list of dependents of the associated policy holder. ***");
                                 if (customerController.deleteCustomerDPD(customerId)) {
-                                    System.out.println("Removed card " + id + " from the system");
+                                    System.out.println("Removed card " + id + " from the system and all related dependents'card.");
                                 } else {
                                     System.out.println("Invalid ID, please try again");
                                 }
                             } else if (customer instanceof PolicyHolder) {
-                                System.out.println("*** Note: Deleting a policyholder's card will also remove all of their dependents' cards ***");
-                                if (customerController.deleteCustomerPLC(customerId)) {
-                                    System.out.println("Removed card " + id + " from the system");
+                                System.out.println("*** Note: This is policyholder's card, Deleting this card will also remove all of their dependents' cards ***");
+
+                                // Prompt for confirmation with loop for validation
+                                String confirmation;
+                                boolean validInput = false;
+                                do {
+                                    System.out.print("Are you sure you want to delete the policyholder's card and all of their dependents' cards? (y/n): ");
+                                    confirmation = scanner.nextLine().toLowerCase(); // Convert input to lowercase
+                                    if (confirmation.equals("y") || confirmation.equals("n")) {
+                                        validInput = true;
+                                    } else {
+                                        System.out.println("Invalid input. Please enter 'y' or 'n'.");
+                                    }
+                                } while (!validInput);
+
+                                if (confirmation.equals("y")) {
+                                    if (customerController.deleteCustomerPLC(customerId)) {
+                                        System.out.println("Removed card " + id + " from the system");
+                                    } else {
+                                        System.out.println("Invalid ID, please try again");
+                                    }
                                 } else {
-                                    System.out.println("Invalid ID, please try again");
+                                    System.out.println("Deletion canceled by user.");
                                 }
                             }
                         } else {
@@ -299,6 +323,7 @@ public class Menu {
                         System.out.println("An error occurred, please try again.");
                     }
                     break;
+
                 case 4:
                     // Implementation for Update Insurance Card
                     break;
@@ -308,6 +333,18 @@ public class Menu {
             }
         } while (choice != 5);
     }
+
+    private boolean ensureCustomerExists() {
+        System.out.print("Is the customer for this claim already in the system? (y/n): ");
+        String inSystem = scanner.nextLine().trim().toLowerCase();
+        if (!inSystem.equals("y")) {
+            System.out.println("You need to add the customer and his/her insurance card first.");
+            addCustomerAndCard(); // Add the new customer
+            return true; // Assume the customer has been added, return true to proceed with claim creation
+        }
+        return true; // Customer already exists, proceed with claim creation
+    }
+
 
     private void customerMenu(){
         int choice = 0;
@@ -333,7 +370,7 @@ public class Menu {
                 case 1:
                     this.printCustomersInfo(customerController.getListOfCustomers(), false);
                     do {
-                        System.out.println("1. View Detail Of A Customer");
+                        System.out.println("1. View Detail Of A Customer (Claims list + Dependents list)");
                         System.out.println("2. Sorting");
                         System.out.println("3. Export To File");
                         System.out.println("4. Return");
@@ -355,29 +392,36 @@ public class Menu {
                         }
                     } while (choice != 4);
                     break;
-                case 2:
+                case 2: addCustomerAndCard(); break;
                 case 3:
                     try {
                         this.printCustomersInfo(customerController.getAll(), true);
                         System.out.println("*** Notice: Deleting a customer also removes their insurance card ***");
                         System.out.println("*** Customer details will be erased from all related claims for management ***");
                         System.out.print("Enter customer ID to remove (c-xxxxxxx): ");
+                        Scanner scanner = new Scanner(System.in);
                         String id = scanner.nextLine();
                         Customer customer = customerController.getOne(id);
                         if (customer != null) {
                             if (customer instanceof Dependent) {
-                                System.out.println("*** Note: Deleting a dependent will also remove them from the list of dependents of the associated policy holder. ***");
-                                if (customerController.deleteCustomerDPD(id)) {
-                                    System.out.println("Removed dependent " + id + " from the system");
-                                } else {
-                                    System.out.println("Invalid ID, please try again");
+                                System.out.println("*** Note: Deleting this dependent will also remove them from the list of dependents of the associated policy holder. ***");
+                                if (confirmDeletion("Are you sure you want to delete this dependent? (y/n): ")) {
+                                    if (customerController.deleteCustomerDPD(id)) {
+                                        System.out.println("Removed dependent " + id + " from the system");
+                                    } else {
+                                        System.out.println("Invalid ID, please try again");
+                                    }
                                 }
                             } else if (customer instanceof PolicyHolder) {
-                                System.out.println("*** Note: Deleting a policy holder will also remove all their dependents. ***");
-                                if (customerController.deleteCustomerPLC(id)) {
-                                    System.out.println("Removed policy holder " + id + " from the system");
+                                System.out.println("*** Note: Deleting this policy holder will also remove all their dependents. ***");
+                                if (confirmDeletion("Are you sure you want to delete the policy holder and all their dependents? (y/n): ")) {
+                                    if (customerController.deleteCustomerPLC(id)) {
+                                        System.out.println("Removed policy holder " + id + " and all dependents from the system");
+                                    } else {
+                                        System.out.println("Invalid ID, please try again");
+                                    }
                                 } else {
-                                    System.out.println("Invalid ID, please try again");
+                                    System.out.println("Deletion canceled by user.");
                                 }
                             }
                         } else {
@@ -392,6 +436,203 @@ public class Menu {
                     System.out.println("Returning...");
             }
         } while (choice!=5);
+    }
+
+    private boolean cardExists(String cardnumber) {
+        return InsuranceCardController.getInstance().getListOfInsuranceCards().stream()
+                .anyMatch(card -> card.getCardNumber().equals(cardnumber));
+    }
+
+    private String generateRandomCardNumber() {
+        return new Random().ints(10, 0, 10)
+                .mapToObj(Integer::toString)
+                .collect(Collectors.joining());
+    }
+
+    private void addCustomerAndCard() {
+        try {
+            this.printCustomersAndCardsInfo(claimController.getListOfCustomers(), claimController.getListOfInsuranceCards(), true);
+            System.out.println("===== FILL IN THE INFORMATION OF THE CUSTOMER'S CARD =====");
+            String fullname = "";
+            while (fullname.isEmpty()) {
+                System.out.print("Enter full name: ");
+                fullname = scanner.nextLine();
+            }
+
+            System.out.println("Is the customer a Dependent or a Policy Holder?");
+            System.out.println("*** Noted: If you are creating a dependent, please ensure that the policy holder is already in the system.");
+            System.out.println("If the policy holder is not in the system, please add the policy holder first ***");
+            System.out.print("Enter your choice (Enter D for Dependent, P for Policy Holder): ");
+
+            String customerType = scanner.nextLine().toUpperCase();
+
+            if (customerType.equals("P")) {
+//                System.out.println("*** Noted: Currently, this policyholder has no dependents listed. Please create dependents for this policyholder");
+//                System.out.println("later and declare to the system that this policyholder is the policyholder of the new dependents ***");
+
+
+                System.out.println("===== FILL IN THE INFORMATION OF THE CARD =====");
+                String cardnumber = null;
+                System.out.println("Choose an option:");
+                System.out.println("1. Manually input card number");
+                System.out.println("2. Generate card number randomly");
+                System.out.print("Enter your choice: ");
+                int choice = scanner.nextInt();
+                scanner.nextLine(); // consume newline
+
+                switch (choice) {
+                    case 1:
+                        while (cardnumber == null || cardnumber.isEmpty() || cardnumber.length() < 10 || cardExists(cardnumber)) {
+                            System.out.print("Enter card number (10 digits): ");
+                            cardnumber = scanner.nextLine();
+                            if (cardnumber.isEmpty()) {
+                                System.out.println("Card number cannot be empty. Please try again.");
+                            } else if (cardnumber.length() < 10) {
+                                System.out.println("Card number must be at least 10 digits. Please try again.");
+                                cardnumber = null; // Reset cardnumber to null to continue the loop
+                            } else if (cardExists(cardnumber)) {
+                                System.out.println("Card number already exists. Please try again.");
+                                cardnumber = null; // Reset cardnumber to null to continue the loop
+                            }
+                        }
+                        break;
+                    case 2:
+                        do {
+                            cardnumber = generateRandomCardNumber();
+                        } while (cardExists(cardnumber));
+                        break;
+                    default:
+                        System.out.println("Invalid choice. Please try again.");
+                        break;
+                }
+
+                String policyowner = null;
+                while (policyowner == null || policyowner.isEmpty()) {
+                    System.out.print("Enter policy owner: ");
+                    policyowner = scanner.nextLine();
+                    if (policyowner.isEmpty()) {
+                        System.out.println("Policy owner cannot be empty. Please try again.");
+                    }
+                }
+
+                SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy");
+                Date expirationdate = null;
+                while (expirationdate == null) {
+                    System.out.print("Enter expiration date (dd-MM-yyyy): ");
+                    String dateInput = scanner.nextLine();
+                    try {
+                        expirationdate = formatter.parse(dateInput);
+                    } catch (ParseException e) {
+                        System.out.println("Invalid date format. Please use dd-MM-yyyy.");
+                    }
+                }
+
+                List<Dependent> listofdependents = new ArrayList<>();
+
+                // Create an InsuranceCard object
+                InsuranceCard insuranceCard = insuranceCardController.add(cardnumber, null, policyowner, expirationdate);
+
+                // Pass the InsuranceCard object when creating the PolicyHolder
+                PolicyHolder policyHolder = customerController.addPolicyHolder(fullname, insuranceCard, new ArrayList<>(), listofdependents);
+                insuranceCard.setCardHolder(policyHolder);
+                claimController.writeInsuranceCardoFile();
+
+                System.out.println("Customer " + fullname + " and insurance card " + cardnumber + " added successfully.");
+
+            } else if (customerType.equals("D")) {
+                this.printPolicyHolders(customerController.getAll(), true);
+                System.out.print("Enter the ID of the policy holder for this dependent: ");
+                String policyHolderId = scanner.nextLine();
+                PolicyHolder policyHolder = (PolicyHolder) customerController.getOne(policyHolderId);
+                if (policyHolder == null) {
+                    System.out.println("Policy holder not found with the given ID.");
+                    return;
+                }
+
+                System.out.println("===== FILL IN THE INFORMATION OF THE CARD =====");
+                String cardnumber = null;
+                System.out.println("Choose an option:");
+                System.out.println("1. Manually input card number");
+                System.out.println("2. Generate card number randomly");
+                System.out.print("Enter your choice: ");
+                int choice = scanner.nextInt();
+                scanner.nextLine(); // consume newline
+
+                switch (choice) {
+                    case 1:
+                        while (cardnumber == null || cardnumber.isEmpty() || cardnumber.length() < 10 || cardExists(cardnumber)) {
+                            System.out.print("Enter card number (10 digits): ");
+                            cardnumber = scanner.nextLine();
+                            if (cardnumber.isEmpty()) {
+                                System.out.println("Card number cannot be empty. Please try again.");
+                            } else if (cardnumber.length() < 10) {
+                                System.out.println("Card number must be at least 10 digits. Please try again.");
+                                cardnumber = null; // Reset cardnumber to null to continue the loop
+                            } else if (cardExists(cardnumber)) {
+                                System.out.println("Card number already exists. Please try again.");
+                                cardnumber = null; // Reset cardnumber to null to continue the loop
+                            }
+                        }
+                        break;
+                    case 2:
+                        do {
+                            cardnumber = generateRandomCardNumber();
+                        } while (cardExists(cardnumber));
+                        break;
+                    default:
+                        System.out.println("Invalid choice. Please try again.");
+                        break;
+                }
+
+                System.out.println("Policy owner of this insurance card is: " + policyHolder.getInsuranceCard().getPolicyOwner());
+
+                SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy");
+                Date expirationdate = null;
+                while (expirationdate == null) {
+                    System.out.print("Enter expiration date (dd-MM-yyyy): ");
+                    String dateInput = scanner.nextLine();
+                    try {
+                        expirationdate = formatter.parse(dateInput);
+                    } catch (ParseException e) {
+                        System.out.println("Invalid date format. Please use dd-MM-yyyy.");
+                    }
+                }
+
+                String policyowner = policyHolder.getInsuranceCard().getPolicyOwner();
+                InsuranceCard insuranceCard = insuranceCardController.add(cardnumber, null, policyowner, expirationdate);
+
+                // Pass the InsuranceCard object when creating the Dependent
+                Dependent dependent = customerController.addDependent(fullname, insuranceCard, new ArrayList<>());
+
+                // Add the dependent to the list of dependents of the policyholder
+                policyHolder.addDependent(dependent);
+                claimController.writeCustomersToFile();
+
+                insuranceCard.setCardHolder(dependent);
+                claimController.writeInsuranceCardoFile();
+
+                System.out.println("Customer " + fullname + " and insurance card " + cardnumber + " added successfully.");
+            } else {
+                System.out.println("Invalid input. Please enter D for Dependent or P for Policy Holder.");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("An error occurred. Please try again.");
+        }
+
+    }
+
+    private boolean confirmDeletion(String message) {
+        Scanner scanner = new Scanner(System.in);
+        String confirmation;
+        do {
+            System.out.print(message);
+            confirmation = scanner.nextLine().toLowerCase();
+            if (!confirmation.equals("y") && !confirmation.equals("n")) {
+                System.out.println("Invalid input. Please enter 'y' or 'n'.");
+            }
+        } while (!confirmation.equals("y") && !confirmation.equals("n"));
+        return confirmation.equals("y");
     }
 
     private void detailClaim() {
@@ -409,17 +650,35 @@ public class Menu {
         System.out.println("\033[1m===== CLAIM DETAIL =====\033[0m");
         System.out.println("ID: " + claim.getId());
         System.out.println("Claim Date: " + new SimpleDateFormat("dd-MM-yyyy").format(claim.getClaimDate()));
-        System.out.println("Insured Person: " + claim.getInsuredPerson().getFullName());
-        System.out.println("Card Number: " + claim.getCardNumber().getCardNumber());
+        if (claim.getInsuredPerson() != null) {
+            System.out.println("Insured Person: " + claim.getInsuredPerson().getFullName());
+        } else {
+            System.out.println("Insured Person: No data");
+        }
+
+        if (claim.getCardNumber() != null) {
+            System.out.println("Card Number: " + claim.getCardNumber().getCardNumber());
+        } else {
+            System.out.println("Card Number: No data");
+        }
         System.out.println("Exam Date: " + new SimpleDateFormat("dd-MM-yyyy").format(claim.getExamDate()));
         System.out.println("List of Documents: " + claim.getDocuments().stream().collect(Collectors.joining(", ")));
         System.out.println("Claim Amount: " + claim.getClaimAmount());
         System.out.println("Status: " + claim.getStatus());
         System.out.println("Receiver Banking Info: " + claim.getReceiverBankingInfo().printInfor());
 
-        System.out.println("\033[1m===== INSURED PERSON DETAIL OF " + insuredPerson.getFullName().toUpperCase() + " =====\033[0m");
-        printACustomerInfo(insuredPersonList);
-        printACardInfo(claim.getCardNumber(), insuredPerson.getFullName());
+        if (insuredPerson != null) {
+                System.out.println("\033[1m===== INSURED PERSON DETAIL OF " + insuredPerson.getFullName().toUpperCase() + " =====\033[0m");
+                printACustomerInfo(insuredPersonList);
+            } else {
+                System.out.println("\033[1m===== INSURED PERSON DETAIL: No data =====\033[0m");
+            }
+
+            if (claim.getCardNumber() != null) {
+                printACardInfo(claim.getCardNumber(), insuredPerson != null ? insuredPerson.getFullName() : "No data");
+            } else {
+                System.out.println("\033[1m===== CARD INFO: No data =====\033[0m");
+            }
     }
 
     private void detailInsuranceCard() {
@@ -437,7 +696,7 @@ public class Menu {
         // Following this, print the details of the insurance card
         System.out.println("\033[1m===== INSURANCE CARD DETAIL =====\033[0m");
         System.out.println("Card Number: " + card.getCardNumber());
-        System.out.println("Card Holder: " + card.getCardHolder().getId());
+        System.out.println("Card Holder: " + card.getCardHolder().getFullName());
         System.out.println("Policy Owner: " + card.getPolicyOwner());
         System.out.println("Expiration Date: " + new SimpleDateFormat("dd-MM-yyyy").format(card.getExpirationDate()));
 
@@ -469,7 +728,7 @@ public class Menu {
 
         // Check if customer has claims and print details
         if (customer.getClaims().isEmpty()) {
-            System.out.println("===== " +  customer.getFullName().toUpperCase() +" HAVE NO CLAIM YET"+ " =====");
+            System.out.println("\033[1m===== " +  customer.getFullName().toUpperCase() +" HAVE NO CLAIM YET"+ " =====\033[0m");
         } else {
             printAClaimInfo(customer.getClaims(),customer.getFullName() ); // Pass the entire list of claims
         }
@@ -499,7 +758,7 @@ public class Menu {
 
         // Update column widths based on the data
         maxLengths[0] = Math.max(maxLengths[0], card.getCardNumber().length());
-        maxLengths[1] = Math.max(maxLengths[1], card.getCardHolder().getId().length());
+        maxLengths[1] = Math.max(maxLengths[1], card.getCardHolder().getFullName().length());
         maxLengths[2] = Math.max(maxLengths[2], card.getPolicyOwner().length());
         maxLengths[3] = Math.max(maxLengths[3], dateFormat.format(card.getExpirationDate()).length());
 
@@ -517,7 +776,7 @@ public class Menu {
         // Print the data row for the single card
         System.out.printf(headerFormat,
                 card.getCardNumber(),
-                card.getCardHolder().getId(),
+                card.getCardHolder().getFullName(),
                 card.getPolicyOwner(),
                 dateFormat.format(card.getExpirationDate())
         );
@@ -540,7 +799,7 @@ public class Menu {
         // Update column widths based on the data
         for (InsuranceCard card : cards) {
             maxLengths[0] = Math.max(maxLengths[0], card.getCardNumber().length());
-            maxLengths[1] = Math.max(maxLengths[1], card.getCardHolder().getId().length());
+            maxLengths[1] = Math.max(maxLengths[1], card.getCardHolder().getFullName().length());
             maxLengths[2] = Math.max(maxLengths[2], card.getPolicyOwner().length());
             maxLengths[3] = Math.max(maxLengths[3], dateFormat.format(card.getExpirationDate()).length());
         }
@@ -564,7 +823,7 @@ public class Menu {
         for (InsuranceCard card : cards) {
             System.out.printf(headerFormat,
                     card.getCardNumber(),
-                    card.getCardHolder().getId(),
+                    card.getCardHolder().getFullName(),
                     card.getPolicyOwner(),
                     dateFormat.format(card.getExpirationDate())
             );
@@ -579,7 +838,7 @@ public class Menu {
 
     // Column headers for dependents
     String[] headers = {
-            "Dependent ID", "Full Name", "Insurance Card", "List Of Claims"
+            "Dependent ID", "Full Name", "Insurance Card"
     };
 
     // Initialize column widths to header lengths
@@ -594,10 +853,10 @@ public class Menu {
         maxLengths[1] = Math.max(maxLengths[1], dependent.getFullName().length());
         String cardNumber = dependent.getInsuranceCard() != null ? dependent.getInsuranceCard().getCardNumber() : "No card";
         maxLengths[2] = Math.max(maxLengths[2], cardNumber.length());
-        String claimsString = dependent.getClaims().isEmpty() ? "no claim yet" : dependent.getClaims().stream()
-                .map(Claim::getId)
-                .collect(Collectors.joining(", "));
-        maxLengths[3] = Math.max(maxLengths[3], claimsString.length());
+//        String claimsString = dependent.getClaims().isEmpty() ? "no claim yet" : dependent.getClaims().stream()
+//                .map(Claim::getId)
+//                .collect(Collectors.joining(", "));
+//        maxLengths[3] = Math.max(maxLengths[3], claimsString.length());
     }
 
     // Create the header format with appropriate spacing
@@ -612,10 +871,10 @@ public class Menu {
             System.out.printf(headerFormat,
                     dependent.getId(),
                     dependent.getFullName(),
-                    getInsuranceCardById(dependent.getId()),
-                    dependent.getClaims().isEmpty() ? "no claim yet" : dependent.getClaims().stream()
-                            .map(Claim::getId)
-                            .collect(Collectors.joining(", "))
+                    getInsuranceCardById(dependent.getId())
+//                    dependent.getClaims().isEmpty() ? "no claim yet" : dependent.getClaims().stream()
+//                            .map(Claim::getId)
+//                            .collect(Collectors.joining(", "))
             );
         }
     }
@@ -673,8 +932,16 @@ public class Menu {
         for (Claim claim : claims) {
             maxLengths[0] = Math.max(maxLengths[0], claim.getId().length());
             maxLengths[1] = Math.max(maxLengths[1], formatDate(claim.getClaimDate()).length());
-            maxLengths[2] = Math.max(maxLengths[2], claim.getInsuredPerson().getFullName().length());
-            maxLengths[3] = Math.max(maxLengths[3], claim.getCardNumber().getCardNumber().length());
+            if (claim.getInsuredPerson() != null) {
+                maxLengths[2] = Math.max(maxLengths[2], claim.getInsuredPerson().getFullName().length());
+            } else {
+                System.out.println("No data");
+            }
+            if (claim.getCardNumber() != null) {
+                maxLengths[3] = Math.max(maxLengths[3], claim.getCardNumber().getCardNumber().length());
+            } else {
+                System.out.println("No data");
+            }
             maxLengths[4] = Math.max(maxLengths[4], formatDate(claim.getExamDate()).length());
             maxLengths[5] = Math.max(maxLengths[5], String.join(", ", claim.getDocuments()).length());
             maxLengths[6] = Math.max(maxLengths[6], decimalFormat.format(claim.getClaimAmount()).length());
@@ -690,8 +957,8 @@ public class Menu {
         System.out.printf(headerFormat,
                 claim.getId(),
                 formatDate(claim.getClaimDate()),
-                claim.getInsuredPerson().getFullName(),
-                claim.getCardNumber().getCardNumber(),
+                (claim.getInsuredPerson() != null) ? claim.getInsuredPerson().getFullName() : "No data",
+                (claim.getCardNumber() != null) ? claim.getCardNumber().getCardNumber() : "No data",
                 formatDate(claim.getExamDate()),
                 String.join(", ", claim.getDocuments()),
                 formattedAmount,
@@ -797,11 +1064,11 @@ public class Menu {
 
         // Prepare headers based on customer type
         List<String> headersList = new ArrayList<>(Arrays.asList(
-                "ID", "Full Name", "Title", "List Of Claims"
+                "ID", "Full Name", "Title"
         ));
-        if (includeDependentsHeader) {
-            headersList.add("List Of Dependents");
-        }
+//        if (includeDependentsHeader) {
+//            headersList.add("List Of Dependents");
+//        }
         String[] headers = headersList.toArray(new String[0]);
 
         // Initialize column widths to header lengths
@@ -818,14 +1085,14 @@ public class Menu {
                     .map(Claim::getId)
                     .collect(Collectors.joining(", "));
             maxLengths[2] = Math.max(maxLengths[2], (customer instanceof PolicyHolder ? "Policy Holder" : "Dependent").length());
-            maxLengths[3] = Math.max(maxLengths[3], claimsString.length());
-            if (customer instanceof PolicyHolder && includeDependentsHeader) {
-                PolicyHolder policyHolder = (PolicyHolder) customer;
-                String dependentsString = policyHolder.getDependents().isEmpty() ? "no dependent yet" : policyHolder.getDependents().stream()
-                        .map(Dependent::getId)
-                        .collect(Collectors.joining(", "));
-                maxLengths[4] = Math.max(maxLengths[4], dependentsString.length());
-            }
+//            maxLengths[3] = Math.max(maxLengths[3], claimsString.length());
+//            if (customer instanceof PolicyHolder && includeDependentsHeader) {
+//                PolicyHolder policyHolder = (PolicyHolder) customer;
+//                String dependentsString = policyHolder.getDependents().isEmpty() ? "no dependent yet" : policyHolder.getDependents().stream()
+//                        .map(Dependent::getId)
+//                        .collect(Collectors.joining(", "));
+//                maxLengths[4] = Math.max(maxLengths[4], dependentsString.length());
+//            }
         }
 
         // Create the header format with appropriate spacing
@@ -847,17 +1114,74 @@ public class Menu {
             List<Object> dataRow = new ArrayList<>(Arrays.asList(
                     customer.getId(),
                     customer.getFullName(),
-                    title,
-                    claimIds
+                    title
+//                    claimIds
             ));
-            if (customer instanceof PolicyHolder && includeDependentsHeader) {
-                PolicyHolder policyHolder = (PolicyHolder) customer;
-                String dependentsText = policyHolder.getDependents().isEmpty() ? "no dependent yet" : String.join(", ", policyHolder.getDependents().stream()
-                        .map(Customer::getId)
-                        .collect(Collectors.toList()));
-                dataRow.add(dependentsText);
-            }
+//            if (customer instanceof PolicyHolder && includeDependentsHeader) {
+//                PolicyHolder policyHolder = (PolicyHolder) customer;
+//                String dependentsText = policyHolder.getDependents().isEmpty() ? "no dependent yet" : String.join(", ", policyHolder.getDependents().stream()
+//                        .map(Customer::getId)
+//                        .collect(Collectors.toList()));
+//                dataRow.add(dependentsText);
+//            }
             System.out.printf(headerFormat, dataRow.toArray());
+        }
+    }
+
+    public void printPolicyHolders(List<Customer> customers, boolean isPreview) {
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.US);
+        symbols.setDecimalSeparator('.'); // Ensure the decimal separator is dot and not comma
+        DecimalFormat decimalFormat = new DecimalFormat("0.#", symbols);
+        decimalFormat.setMaximumFractionDigits(2);
+        // Column headers
+        String[] headers = {
+                "ID", "Full Name", "Insurance Card", "Title"
+        };
+
+        // Initialize column widths to header lengths
+        int[] maxLengths = new int[headers.length];
+        for (int i = 0; i < headers.length; i++) {
+            maxLengths[i] = headers[i].length();
+        }
+
+        // Update column widths based on the data
+        for (Customer customer : customers) {
+            if (customer instanceof PolicyHolder) {
+                maxLengths[0] = Math.max(maxLengths[0], customer.getId().length());
+                maxLengths[1] = Math.max(maxLengths[1], customer.getFullName().length());
+                maxLengths[2] = Math.max(maxLengths[2], customer.getInsuranceCard().getCardNumber().length());
+                String title = "Policy Holder";
+                maxLengths[3] = Math.max(maxLengths[3], title.length());
+            }
+        }
+
+        // Create the header format with appropriate spacing
+        String headerFormat = "";
+        for (int width : maxLengths) {
+            headerFormat += " %-"+ (width + 2) +"s|";
+        }
+        headerFormat += "%n";
+
+        // Print the table
+        if (isPreview) {
+            System.out.println("\033[1m====== PREVIEW THE POLICY HOLDER LIST =====\033[0m");
+        } else {
+            System.out.println("\033[1m====== POLICY HOLDER LIST =====\033[0m");
+        }
+        // Print the headers
+        System.out.printf(headerFormat, (Object[]) headers);
+
+        // Print the data rows
+        for (Customer customer : customers) {
+            if (customer instanceof PolicyHolder) {
+                String title = "Policy Holder";
+                System.out.printf(headerFormat,
+                        customer.getId(),
+                        customer.getFullName(),
+                        customer.getInsuranceCard().getCardNumber(),
+                        title
+                );
+            }
         }
     }
 
@@ -868,7 +1192,7 @@ public class Menu {
         decimalFormat.setMaximumFractionDigits(2);
         // Column headers
         String[] headers = {
-                "ID", "Full Name", "Insurance Card", "Title", "List Of Claims", "List Of Dependents"
+                "ID", "Full Name", "Insurance Card", "Title"
         };
 
         // Initialize column widths to header lengths
@@ -885,20 +1209,20 @@ public class Menu {
             String claimsString = customer.getClaims().isEmpty() ? "no claim yet" : customer.getClaims().stream()
                     .map(Claim::getId)
                     .collect(Collectors.joining(", "));
-            maxLengths[4] = Math.max(maxLengths[4], claimsString.length());
-            if (customer instanceof PolicyHolder) {
-                PolicyHolder policyHolder = (PolicyHolder) customer;
-                if (!policyHolder.getDependents().isEmpty()) {
-                    maxLengths[5] = Math.max(maxLengths[5], policyHolder.getDependents().stream()
-                            .map(Dependent::getId) // Assuming you want to print full names
-                            .collect(Collectors.joining(", ")).length());
-                } else {
+//            maxLengths[4] = Math.max(maxLengths[4], claimsString.length());
+//            if (customer instanceof PolicyHolder) {
+//                PolicyHolder policyHolder = (PolicyHolder) customer;
+//                if (!policyHolder.getDependents().isEmpty()) {
+//                    maxLengths[5] = Math.max(maxLengths[5], policyHolder.getDependents().stream()
+//                            .map(Dependent::getId) // Assuming you want to print full names
+//                            .collect(Collectors.joining(", ")).length());
+//                } else {
                     // No dependents, leave the length as is (could be the header length if no dependents at all)
-                }
+//                }
 //            } else {
 //                // Account for the length of the string "he/she is a dependent"
 //                maxLengths[4] = Math.max(maxLengths[4], "he/she is a dependent".length());
-            }
+//            }
             String title = customer instanceof PolicyHolder ? "Policy Holder" : "Dependent";
             maxLengths[3] = Math.max(maxLengths[3], title.length());
         }
@@ -921,16 +1245,16 @@ public class Menu {
 
         // Print the data rows
         for (Customer customer : customers) {
-            String claimIds = customer.getClaims().isEmpty() ? "no claim yet" : String.join(", ", customer.getClaims().stream()
-                    .map(Claim::getId)
-                    .collect(Collectors.toList()));
-            String dependentsText = "";
-            if (customer instanceof PolicyHolder) {
-                PolicyHolder policyHolder = (PolicyHolder) customer;
-                dependentsText = policyHolder.getDependents().isEmpty() ? "no dependent yet" : String.join(", ", policyHolder.getDependents().stream()
-                        .map(Customer::getId)
-                        .collect(Collectors.toList()));
-            }
+//            String claimIds = customer.getClaims().isEmpty() ? "no claim yet" : String.join(", ", customer.getClaims().stream()
+//                    .map(Claim::getId)
+//                    .collect(Collectors.toList()));
+//            String dependentsText = "";
+//            if (customer instanceof PolicyHolder) {
+//                PolicyHolder policyHolder = (PolicyHolder) customer;
+//                dependentsText = policyHolder.getDependents().isEmpty() ? "no dependent yet" : String.join(", ", policyHolder.getDependents().stream()
+//                        .map(Customer::getId)
+//                        .collect(Collectors.toList()));
+//            }
 
             String title = customer instanceof PolicyHolder ? "Policy Holder" : "Dependent";
 
@@ -938,9 +1262,9 @@ public class Menu {
                     customer.getId(),
                     customer.getFullName(),
                     customer.getInsuranceCard().getCardNumber(),
-                    title,
-                    claimIds,
-                    dependentsText
+                    title
+//                    claimIds,
+//                    dependentsText
                     );
         }
     }
@@ -950,4 +1274,63 @@ public class Menu {
         return sdf.format(date);
     }
 
+    public void printCustomersAndCardsInfo(List<Customer> customers, List<InsuranceCard> cards, boolean isPreview) {
+        if (customers.size() != cards.size()) {
+            System.out.println("The lists do not match in size, unable to print in a 1-1 relationship.");
+            return;
+        }
+
+        // Assuming the customers and cards are in the same order and correspond to each other.
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+
+        // Initialize maximum lengths
+        int maxCustomerIdLength = "Customer ID".length();
+        int maxFullNameLength = "Customer Full Name".length();
+        int maxCardNumberLength = "Card Number".length();
+        int maxTitleLength = "Title".length();
+        int maxPolicyOwnerLength = "Policy Owner".length();
+        int maxExpirationDateLength = "Expiration Date".length();
+
+        // Find maximum lengths
+        for (int i = 0; i < customers.size(); i++) {
+            Customer customer = customers.get(i);
+            InsuranceCard card = cards.get(i);
+
+            maxCustomerIdLength = Math.max(maxCustomerIdLength, customer.getId().length());
+            maxFullNameLength = Math.max(maxFullNameLength, customer.getFullName().length());
+            maxCardNumberLength = Math.max(maxCardNumberLength, customer.getInsuranceCard().getCardNumber().length());
+            maxTitleLength = Math.max(maxTitleLength, (customer instanceof PolicyHolder) ? "Policy Holder".length() : "Dependent".length());
+            maxPolicyOwnerLength = Math.max(maxPolicyOwnerLength, card.getPolicyOwner().length());
+            maxExpirationDateLength = Math.max(maxExpirationDateLength, dateFormat.format(card.getExpirationDate()).length());
+        }
+
+        // Build the format strings dynamically
+        String format = String.format("%%-%ds | %%-%ds | %%-%ds | %%-%ds | %%-%ds | %%-%ds%%n",
+                maxCustomerIdLength, maxFullNameLength, maxCardNumberLength, maxTitleLength,
+                maxPolicyOwnerLength, maxExpirationDateLength);
+
+        // Print table header
+        if (isPreview) {
+            System.out.println("\033[1m====== PREVIEW CUSTOMER AND INSURANCE CARD INFO =====\033[0m");
+        } else {
+            System.out.println("\033[1m====== CUSTOMER AND INSURANCE CARD INFO =====\033[0m");
+        }
+
+        // Print headers
+        System.out.printf(format, "Customer ID", "Customer Full Name", "Card Number", "Title", "Policy Owner", "Expiration Date");
+
+        // Print each row
+        for (int i = 0; i < customers.size(); i++) {
+            Customer customer = customers.get(i);
+            InsuranceCard card = cards.get(i);
+
+            System.out.printf(format,
+                    customer.getId(),
+                    customer.getFullName(),
+                    customer.getInsuranceCard().getCardNumber(),
+                    (customer instanceof PolicyHolder) ? "Policy Holder" : "Dependent",
+                    card.getPolicyOwner(),
+                    dateFormat.format(card.getExpirationDate()));
+        }
+    }
 }
