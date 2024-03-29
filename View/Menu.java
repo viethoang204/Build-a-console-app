@@ -334,18 +334,6 @@ public class Menu {
         } while (choice != 5);
     }
 
-    private boolean ensureCustomerExists() {
-        System.out.print("Is the customer for this claim already in the system? (y/n): ");
-        String inSystem = scanner.nextLine().trim().toLowerCase();
-        if (!inSystem.equals("y")) {
-            System.out.println("You need to add the customer and his/her insurance card first.");
-            addCustomerAndCard(); // Add the new customer
-            return true; // Assume the customer has been added, return true to proceed with claim creation
-        }
-        return true; // Customer already exists, proceed with claim creation
-    }
-
-
     private void customerMenu(){
         int choice = 0;
         do {
