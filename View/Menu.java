@@ -56,7 +56,7 @@ public class Menu {
             System.out.println("1. View All Claim");
             System.out.println("2. Add Claim");
             System.out.println("3. Remove Claim");
-            System.out.println("4. Update Claim");
+            System.out.println("4. Edit Claim");
             System.out.println("5. Return");
             System.out.print("Enter your choice: ");
 
@@ -105,7 +105,7 @@ public class Menu {
                             break;
                         }
                         this.printClaimsInfo(claimController.getAll(), true);
-                        System.out.println("===== CREATE NEW CLAIM =====");
+                        System.out.println("\033[1m===== CREATE NEW CLAIM =====\033[0m");
                         SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy");
                         Date claimdate = null;
                         while (claimdate == null) {
@@ -148,7 +148,7 @@ public class Menu {
                             }
                         }
 
-                        System.out.print("Enter a list of document names without file extensions, separated by commas: ");
+                        System.out.print("Enter a list of document names without file prefix and extensions, separated by commas: ");
                         List<String> rawListOfDocuments = Arrays.asList(scanner.nextLine().split(","));
                         Set<String> documentSet = new LinkedHashSet<>(rawListOfDocuments);
                         List<String> listofdocuments = new ArrayList<>(documentSet);
@@ -204,7 +204,182 @@ public class Menu {
                     }
                     break;
                 case 4:
-                    System.out.println("case 4.");
+                    try {
+                        System.out.println("\033[1m===== EDIT CLAIM =====\033[0m");
+                        this.printClaimsInfo(claimController.getAll(), true);
+
+                        System.out.print("Enter claim ID to edit (f-xxxxxxxxxx): ");
+                        String id = scanner.nextLine();
+                        Claim claim = claimController.getOne(id);
+                        if (claim == null) {
+                            System.out.println("Claim not found with the given ID.");
+                            return;
+                        }
+
+                        // Keep track of the old insured person
+                        Customer oldInsuredPerson = claim.getInsuredPerson();
+
+                        SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy");
+                        System.out.print("Enter claim date (dd-MM-yyyy) or press Enter to skip: ");
+                        String claimDateInput = scanner.nextLine();
+                        if (!claimDateInput.isEmpty()) {
+                            try {
+                                Date claimdate = formatter.parse(claimDateInput);
+                                claim.setClaimDate(claimdate);
+                            } catch (Exception e) {
+                                System.out.println("Invalid date format. Please try again.");
+                            }
+                        }
+
+                        this.printCustomersAndCardsInfo(claimController.getListOfCustomers(), claimController.getListOfInsuranceCards(), true);
+                        System.out.print("Enter insured person ID (c-xxxxxxx) or press Enter to skip: ");
+                        String customerId = scanner.nextLine().trim();
+                        if (!customerId.isEmpty()) {
+                            Customer insuredperson = claimController.getCustomerById(customerId);
+                            if (insuredperson != null) {
+                                claim.setInsuredPerson(insuredperson);
+                                if (!insuredperson.equals(oldInsuredPerson)) {
+                                    List<Claim> oldInsuredPersonClaims = oldInsuredPerson.getClaims();
+                                    for (int i = 0; i < oldInsuredPersonClaims.size(); i++) {
+                                        if (oldInsuredPersonClaims.get(i).getId().equals(claim.getId())) {
+                                            oldInsuredPersonClaims.remove(i);
+                                            System.out.println("Claim removed from old insured person's list.");
+                                            break; // Exit the loop after removing the claim
+                                        }
+                                    }
+                                    List<Claim> newInsuredPersonClaims = insuredperson.getClaims();
+                                    boolean claimAlreadyExists = newInsuredPersonClaims.stream().anyMatch(c -> c.getId().equals(claim.getId()));
+                                    if (!claimAlreadyExists) {
+                                        newInsuredPersonClaims.add(claim);
+                                        System.out.println("Claim added to new insured person's list.");
+                                    } else {
+                                        System.out.println("Claim already exists in the new insured person's list.");
+                                    }
+                                }
+                                InsuranceCard cardnumber = insuredperson.getInsuranceCard();
+                                System.out.println("\033[1mInsurance card number of " + insuredperson.getFullName() + " is " + cardnumber.getCardNumber() + "\033[0m");
+                                claim.setCardNumber(cardnumber);
+                                claim.getReceiverBankingInfo().setName(insuredperson.getFullName().toUpperCase());
+                            }
+                        }
+
+                        System.out.print("Enter exam date (dd-MM-yyyy) or press Enter to skip: ");
+                        String examDateInput = scanner.nextLine();
+                        if (!examDateInput.isEmpty()) {
+                            try {
+                                Date examdate = formatter.parse(examDateInput);
+                                claim.setExamDate(examdate);
+                            } catch (Exception e) {
+                                System.out.println("Invalid date format. Please try again.");
+                            }
+                        }
+
+                        boolean editingDocuments = true;
+                        while (editingDocuments) {
+                            System.out.println("\033[1m===== EDIT DOCUMENTS =====\033[0m");
+                            System.out.println("Choose an option:");
+                            System.out.println("1. Add a document");
+                            System.out.println("2. Delete a document");
+                            System.out.println("3. Skip");
+                            System.out.print("Your choose: ");
+                            String option = scanner.nextLine();
+
+                            List<String> listofdocuments = new ArrayList<>(claim.getDocuments());
+                            switch (option) {
+                                case "1":
+                                    for (String document : listofdocuments) {
+                                        System.out.println(document);
+                                    }
+                                    System.out.print("Enter the name of the document to add (without full file prefix and extension): ");
+                                    String documentToAdd = scanner.nextLine().trim(); // Trim to remove accidental whitespace
+                                    if (!documentToAdd.isEmpty()) {
+                                        // Construct the full document name
+                                        documentToAdd = claim.getId() + "_" + claim.getCardNumber().getCardNumber() + "_" + documentToAdd + ".pdf";
+                                        // Check if the document already exists to prevent duplicates
+                                        boolean exists = listofdocuments.contains(documentToAdd);
+                                        if (!exists) {
+                                            listofdocuments.add(documentToAdd);
+                                            System.out.println("Document added successfully.");
+                                            claim.setDocuments(listofdocuments); // Update the claim with the new list of documents
+                                        } else {
+                                            System.out.println("Document already exists.");
+                                        }
+                                    } else {
+                                        System.out.println("No document name entered.");
+                                    }
+                                    break;
+                                case "2":
+                                    for (String document : listofdocuments) {
+                                        System.out.println(document);
+                                    }
+                                    System.out.print("Enter the name of the document to delete (full prefix and extension): ");
+                                    String documentToDelete = scanner.nextLine();
+                                    if (!documentToDelete.isEmpty()) {
+                                        int documentIndex = -1;
+                                        for (int i = 0; i < listofdocuments.size(); i++) {
+                                            if (listofdocuments.get(i).equals(documentToDelete)) {
+                                                documentIndex = i;
+                                                break;
+                                            }
+                                        }
+                                        if (documentIndex != -1) {
+                                            listofdocuments.remove(documentIndex);
+                                            System.out.println("Document removed successfully.");
+                                        } else {
+                                            System.out.println("Document not found: " + documentToDelete);
+                                        }
+                                        claim.setDocuments(listofdocuments);
+                                    }
+                                    break;
+                                case "3":
+                                    System.out.println("Skipping document editing.");
+                                    editingDocuments = false; // This will break the loop
+                                    break;
+                                default:
+                                    System.out.println("Invalid option. Please choose 1 to add a document, 2 to delete a document, or 3 to skip.");
+                                    break;
+                            }
+                        }
+
+                        System.out.print("Enter claim amount($): ");
+                        String amountInput = scanner.nextLine();
+                        if (!amountInput.isEmpty()) {
+                            try {
+                                Double amount = Double.parseDouble(amountInput);
+                                claim.setClaimAmount(amount);
+                            } catch (NumberFormatException e) {
+                                System.out.println("Invalid number format. Please try again.");
+                            }
+                        }
+
+                        System.out.print("Enter status (New, Processing, Done) or press Enter to skip: ");
+                        String status = scanner.nextLine().trim().toLowerCase();
+                        if (!status.isEmpty()) {
+                            if (status.equals("new") || status.equals("processing") || status.equals("done")) {
+                                status = status.substring(0, 1).toUpperCase() + status.substring(1);
+                                claim.setStatus(status);
+                            } else {
+                                System.out.println("Invalid status. Please enter 'New', 'Processing', or 'Done' or Enter to skip.");
+                            }
+                        }
+
+                        System.out.print("===== EDIT BANKING INFORMATION OF " + claim.getInsuredPerson().getFullName().toUpperCase() +" =====" + "\n");
+                        System.out.print("Enter the bank name: ");
+                        String bank = scanner.nextLine().toUpperCase();
+                        if (!bank.isEmpty()){
+                            claim.getReceiverBankingInfo().setBank(bank);
+                        }
+                        System.out.print("Enter the card number: ");
+                        String number_bank = scanner.nextLine();
+                        if (!number_bank.isEmpty()){
+                            claim.getReceiverBankingInfo().setNumber(number_bank);
+                        }
+
+                        claimController.update(claim);
+                        System.out.println("Claim updated");
+                    } catch (Exception e) {
+                        System.out.println("An error occurred. Please try again");
+                    }
                     break;
                 case 5:
                     System.out.println("Returning...");
@@ -219,7 +394,7 @@ public class Menu {
             System.out.println("1. View All Insurance Card");
             System.out.println("2. Add Customer and his/her Insurance Card");
             System.out.println("3. Remove Insurance Card");
-            System.out.println("4. Update Insurance Card");
+            System.out.println("4. Edit Insurance Card");
             System.out.println("5. Return");
             System.out.print("Enter your choice: ");
 
@@ -341,7 +516,7 @@ public class Menu {
             System.out.println("1. View All Customer");
             System.out.println("2. Add Customer And His/Her Insurance Card");
             System.out.println("3. Remove Customer");
-            System.out.println("4. Update Customer");
+            System.out.println("4. Edit Customer");
             System.out.println("5. Return");
             System.out.print("Enter your choice: ");
 

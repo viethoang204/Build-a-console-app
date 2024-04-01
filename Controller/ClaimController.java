@@ -90,7 +90,16 @@ public class ClaimController implements ClaimProcessManager {
     }
 
     @Override
-    public void update(Claim claim) {
+    public void update(Claim updatedClaim) {
+        List<Claim> claims = getAll();
+        for (int i = 0; i < claims.size(); i++) {
+            if (claims.get(i).getId().equals(updatedClaim.getId())) {
+                claims.set(i, updatedClaim);
+                break;
+            }
+        }
+        writeClaimsToFile();
+        writeCustomersToFile();
     }
 
     @Override
@@ -383,9 +392,7 @@ public class ClaimController implements ClaimProcessManager {
             e.printStackTrace();
         }
     }
-
-
-
+    
     public void writeInsuranceCardoFile() {
         try (PrintWriter writer = new PrintWriter(new FileWriter("dataFile/insuranceCards.txt"))) {
             // Write the CSV header
