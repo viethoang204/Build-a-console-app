@@ -5,6 +5,8 @@ import Controller.CustomerController;
 import Controller.InsuranceCardController;
 import Model.*;
 
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
@@ -18,7 +20,7 @@ public class Menu {
     private CustomerController customerController = CustomerController.getInstance();
     private InsuranceCardController insuranceCardController = InsuranceCardController.getInstance();
 
-    public Menu(){
+    public Menu() {
     }
 
     public void view(){
@@ -57,7 +59,8 @@ public class Menu {
             System.out.println("2. Add Claim");
             System.out.println("3. Remove Claim");
             System.out.println("4. Edit Claim");
-            System.out.println("5. Return");
+            System.out.println("5. Save As File");
+            System.out.println("6. Return");
             System.out.print("Enter your choice: ");
 
             try {
@@ -71,12 +74,11 @@ public class Menu {
 
             switch (choice) {
                 case 1:
-                    this.printClaimsInfo(claimController.getAll(), false);
                     do {
+                        this.printClaimsInfo(claimController.getAll(), false);
                         System.out.println("1. View Detail Of A Claim");
                         System.out.println("2. Sorting");
-                        System.out.println("3. Export To File");
-                        System.out.println("4. Return");
+                        System.out.println("3. Return");
                         System.out.print("Enter your choice: ");
                         try {
                             choice = scanner.nextInt();
@@ -88,12 +90,11 @@ public class Menu {
                         }
                         switch (choice){
                             case 1: detailClaim(); break;
-                            case 2:
+                            case 2: sortingClaim(); break;
                             case 3:
-                            case 4:
                                 System.out.println("Returning...");
                         }
-                    } while (choice != 4);
+                    } while (choice != 3);
                     break;
                 case 2:
                     try {
@@ -194,12 +195,23 @@ public class Menu {
                         this.printClaimsInfo(claimController.getAll(), true);
                         System.out.print("Enter claim ID to remove (f-xxxxxxxxxx): ");
                         String id = scanner.nextLine();
-                        if (claimController.delete(id)) {
+                        Claim claim = claimController.getOne(id);
+                        if (claim != null && claimController.delete(id)) {
                             System.out.println("Removed claim " + id + " from the system");
+                            Customer insuredperson = claim.getInsuredPerson();
+                            List<Claim> customerClaims = insuredperson.getClaims();
+                            for (int i = 0; i < customerClaims.size(); i++) {
+                                if (customerClaims.get(i).getId().equals(claim.getId())) {
+                                    customerClaims.remove(i);
+                                    System.out.println("Claim removed from insured person's list.");
+                                    break;
+                                }
+                            }
+                            claimController.writeCustomersToFile();
                         } else {
-                            System.out.println("Invalid ID, please try again");
+                            System.out.println("Claim not found with the given ID.");
                         }
-                    }catch (Exception e){
+                    } catch (Exception e){
                         System.out.println("An error occurred, please try again.");
                     }
                     break;
@@ -213,7 +225,7 @@ public class Menu {
                         Claim claim = claimController.getOne(id);
                         if (claim == null) {
                             System.out.println("Claim not found with the given ID.");
-                            return;
+                            claimMenu();
                         }
 
                         // Keep track of the old insured person
@@ -341,7 +353,7 @@ public class Menu {
                             }
                         }
 
-                        System.out.print("Enter claim amount($): ");
+                        System.out.print("Enter claim amount($) or press enter to Skip: ");
                         String amountInput = scanner.nextLine();
                         if (!amountInput.isEmpty()) {
                             try {
@@ -382,9 +394,289 @@ public class Menu {
                     }
                     break;
                 case 5:
+                    this.printClaimsInfo(claimController.getAll(), true);
+                    do {
+                        System.out.println("The claim table is currently sorted by the " + claimController.currentClaimOrder + " order");
+                        System.out.println("Would you like to change the order before saving the file?");
+                        System.out.println("1. Yes. moving to sorting menu");
+                        System.out.println("2. No, save the file");
+                        System.out.println("3. Return");
+                        System.out.print("Enter your choice: ");
+                        try {
+                            choice = scanner.nextInt();
+                            scanner.nextLine(); // Consume the newline character
+                        } catch (InputMismatchException e) {
+                            System.out.println("Invalid input. Please enter a number.");
+                            scanner.nextLine(); // Consume the invalid input
+                            continue; // Skip the rest of the loop and start over
+                        }
+                        switch (choice){
+                            case 1: sortingClaim(); break;
+                            case 2: savingClaimMenu();break;
+                            case 3:
+                                System.out.println("Returning...");
+                        }
+                    } while (choice != 3);
+                case 6:
                     System.out.println("Returning...");
+                    view();
             }
-        } while (choice!=5);
+        } while (choice!=6);
+    }
+
+    private void savingClaimMenu() {
+        int choice = 0;
+        do {
+            System.out.println("1. Save as table format TXT");
+            System.out.println("2. Save as CSV");
+            System.out.println("3. Save as TSV");
+            System.out.println("4. Return");
+            System.out.print("Enter your choice: ");
+            try {
+                choice = scanner.nextInt();
+                scanner.nextLine(); // Consume the newline character
+            } catch (InputMismatchException e) {
+                System.out.println("Invalid input. Please enter a number.");
+                scanner.nextLine(); // Consume the invalid input
+                continue; // Skip the rest of the loop and start over
+            }
+            switch (choice){
+                case 1:
+                    saveClaimListAsTable(claimController.getListOfClaims(), true);
+                    claimMenu();
+                    break;
+                case 2:
+                    saveClaimListAsTsv(claimController.getListOfClaims(), true);
+                    claimMenu();
+                    break;
+                case 3:
+                    saveClaimListAsCsv(claimController.getListOfClaims(), true);
+                    claimMenu();
+                    break;
+                case 4:
+                    System.out.println("Returning...");
+                    claimMenu();
+            }
+        } while (choice != 4);
+    }
+
+    public void saveClaimListAsTsv(List<Claim> claims, boolean saveFile) {
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.US);
+        symbols.setDecimalSeparator('.'); // Ensure the decimal separator is dot and not comma
+        DecimalFormat decimalFormat = new DecimalFormat("0.#", symbols);
+        decimalFormat.setMaximumFractionDigits(2);
+        String delimiter = "\t";
+        String lineEnd = "\r\n";
+        String[] headers = {
+                "ID", "Claim Date", "Insured Person", "Card Number", "Exam Date",
+                "List of Documents", "Claim Amount", "Status", "Receiver Banking Info"
+        };
+
+        PrintWriter out = null;
+        if (saveFile) {
+            // Prompt user for file name here
+            System.out.print("Enter file name to save as TSV: ");
+            String fileName = scanner.nextLine();
+            String filePath = "savedFile/" + fileName + ".tsv"; // Adjust directory as needed
+
+            try {
+                out = new PrintWriter(filePath);
+            } catch (FileNotFoundException e) {
+                System.err.println("File not found: " + filePath);
+                return; // Exit the method if file not found
+            }
+        } else {
+            out = new PrintWriter(System.out);
+        }
+
+        // Print the headers
+        out.print(String.join(delimiter, headers) + lineEnd);
+
+        // Print each data row
+        for (Claim claim : claims) {
+            String[] rowData = {
+                    claim.getId(),
+                    formatDate(claim.getClaimDate()),
+                    claim.getInsuredPerson() != null ? claim.getInsuredPerson().getFullName() : "no data",
+                    claim.getCardNumber() != null ? claim.getCardNumber().getCardNumber() : "no data",
+                    formatDate(claim.getExamDate()),
+                    String.join(";", claim.getDocuments()),
+                    decimalFormat.format(claim.getClaimAmount()),
+                    claim.getStatus(),
+                    claim.getReceiverBankingInfo().printInfor()
+            };
+
+            out.print(String.join(delimiter, rowData) + lineEnd);
+        }
+
+        out.close();
+    }
+
+    public void saveClaimListAsCsv(List<Claim> claims, boolean saveFile) {
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.US);
+        symbols.setDecimalSeparator('.'); // Ensure the decimal separator is dot and not comma
+        DecimalFormat decimalFormat = new DecimalFormat("0.#", symbols);
+        decimalFormat.setMaximumFractionDigits(2);
+        String delimiter = ",";
+        String lineEnd = "\r\n";
+        String[] headers = {
+                "ID", "Claim Date", "Insured Person", "Card Number", "Exam Date",
+                "List of Documents", "Claim Amount", "Status", "Receiver Banking Info"
+        };
+
+        PrintWriter out = null;
+        if (saveFile) {
+            // Prompt user for file name here
+            System.out.print("Enter file name to save as CSV: ");
+            String fileName = scanner.nextLine();
+            String filePath = "savedFile/" + fileName + ".csv"; // Adjust directory as needed
+
+            try {
+                out = new PrintWriter(filePath);
+            } catch (FileNotFoundException e) {
+                System.err.println("File not found: " + filePath);
+                return; // Exit the method if file not found
+            }
+        } else {
+            out = new PrintWriter(System.out);
+        }
+
+        // Print the headers
+        out.print(String.join(delimiter, headers) + lineEnd);
+
+        // Print each data row
+        for (Claim claim : claims) {
+            String[] rowData = {
+                    claim.getId(),
+                    formatDate(claim.getClaimDate()),
+                    claim.getInsuredPerson() != null ? claim.getInsuredPerson().getFullName() : "no data",
+                    claim.getCardNumber() != null ? claim.getCardNumber().getCardNumber() : "no data",
+                    formatDate(claim.getExamDate()),
+                    String.join(";", claim.getDocuments()),
+                    decimalFormat.format(claim.getClaimAmount()),
+                    claim.getStatus(),
+                    claim.getReceiverBankingInfo().printInfor()
+            };
+
+            // Handle potential commas in the data
+            for (int i = 0; i < rowData.length; i++) {
+                rowData[i] = "\"" + rowData[i] + "\"";
+            }
+
+            out.print(String.join(delimiter, rowData) + lineEnd);
+        }
+
+        out.close();
+    }
+
+    public void saveClaimListAsTable(List<Claim> claims, boolean saveFile) {
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.US);
+        symbols.setDecimalSeparator('.'); // Ensure the decimal separator is dot and not comma
+        DecimalFormat decimalFormat = new DecimalFormat("0.#", symbols);
+        decimalFormat.setMaximumFractionDigits(2);
+
+        // Column headers
+        String[] headers = {
+                "ID", "Claim Date", "Insured Person", "Card Number", "Exam Date",
+                "List of Documents", "Claim Amount", "Status", "Receiver Banking Info"
+        };
+
+        // Initialize column widths to header lengths
+        int[] maxLengths = new int[headers.length];
+        for (int i = 0; i < headers.length; i++) {
+            maxLengths[i] = headers[i].length();
+        }
+
+        // Update column widths based on the data
+        for (Claim claim : claims) {
+            maxLengths[0] = Math.max(maxLengths[0], claim.getId().length());
+            maxLengths[1] = Math.max(maxLengths[1], formatDate(claim.getClaimDate()).length());
+            String insuredPersonName = claim.getInsuredPerson() != null ? claim.getInsuredPerson().getFullName() : "no data";
+            String cardNumber = claim.getCardNumber() != null ? claim.getCardNumber().getCardNumber() : "no data";
+            maxLengths[2] = Math.max(maxLengths[2], insuredPersonName.length());
+            maxLengths[3] = Math.max(maxLengths[3], cardNumber.length());
+            maxLengths[4] = Math.max(maxLengths[4], formatDate(claim.getExamDate()).length());
+            maxLengths[5] = Math.max(maxLengths[5], String.join(", ", claim.getDocuments()).length());
+            maxLengths[6] = Math.max(maxLengths[6], decimalFormat.format(claim.getClaimAmount()).length());
+            maxLengths[7] = Math.max(maxLengths[7], claim.getStatus().length());
+            maxLengths[8] = Math.max(maxLengths[8], claim.getReceiverBankingInfo().printInfor().length());
+        }
+
+        // Create the header format with appropriate spacing
+        String headerFormat = "|";
+        String lineFormat = "+";
+        String borderFormat = "+";
+        for (int width : maxLengths) {
+            headerFormat += " %-"+ (width + 2) +"s|";  // +2 for padding
+            lineFormat += new String(new char[width + 3]).replace('\0', '-') + "+";
+            borderFormat += new String(new char[width + 3]).replace('\0', '-') + "+";
+        }
+        headerFormat += "%n";
+        lineFormat = lineFormat.substring(0, lineFormat.length() - 1) + "%n";
+        borderFormat = borderFormat.substring(0, borderFormat.length() - 1) + "%n";
+
+        // Calculate the total width of the table including border characters
+        int totalWidth = Arrays.stream(maxLengths).sum() + maxLengths.length * 3 + 1;
+
+        // Calculate the width of the borders
+        int borderWidth = maxLengths.length + 1;
+
+        // Create the title with the correct padding to make it the same length as the table width including the borders
+        String title = "CLAIM LIST";
+        int titleWidth = title.length();
+        int totalPadding = totalWidth - titleWidth;
+        int paddingBefore = totalPadding / 2 + borderWidth / 2 + 3; // adding half the border width to the padding
+        int paddingAfter = totalPadding - paddingBefore + borderWidth / 2 + 3;
+
+        String titlePaddingBefore = new String(new char[paddingBefore]).replace('\0', '=');
+        String titlePaddingAfter = new String(new char[paddingAfter]).replace('\0', '=');
+
+        // Combine parts to create the full title
+        String fullTitle = titlePaddingBefore + title + titlePaddingAfter;
+
+        PrintWriter out = null;
+        if (saveFile) {
+            // Prompt user for file name here
+            System.out.print("Enter file name to save as TXT: ");
+            String fileName = scanner.nextLine();
+            String filePath = "savedFile/" + fileName+ ".txt"; // Adjust directory as needed
+
+            try {
+                out = new PrintWriter(filePath);
+            } catch (FileNotFoundException e) {
+                System.err.println("File not found: " + filePath);
+                return; // Exit the method if file not found
+            }
+        } else {
+            out = new PrintWriter(System.out);
+        }
+        out.println(fullTitle);
+//        out.println(title.replace(' ', '='));
+        // Print the headers
+        out.printf(borderFormat);
+        // Print the headers
+        out.printf(headerFormat, (Object[]) headers);
+        out.printf(lineFormat);
+        // Print each data row
+
+        for (Claim claim : claims) {
+            Object[] rowData = {
+                    claim.getId(),
+                    formatDate(claim.getClaimDate()),
+                    claim.getInsuredPerson() != null ? claim.getInsuredPerson().getFullName() : "no data",
+                    claim.getCardNumber() != null ? claim.getCardNumber().getCardNumber() : "no data",
+                    formatDate(claim.getExamDate()),
+                    String.join(", ", claim.getDocuments()),
+                    decimalFormat.format(claim.getClaimAmount()),
+                    claim.getStatus(),
+                    claim.getReceiverBankingInfo().printInfor()
+            };
+            out.printf(headerFormat, rowData);
+            out.printf(lineFormat);
+        }
+
+//        out.printf(borderFormat);
+        out.close();
     }
 
     private void cardMenu() {
@@ -395,7 +687,8 @@ public class Menu {
             System.out.println("2. Add Customer and his/her Insurance Card");
             System.out.println("3. Remove Insurance Card");
             System.out.println("4. Edit Insurance Card");
-            System.out.println("5. Return");
+            System.out.println("5. Save as file");
+            System.out.println("6. Return");
             System.out.print("Enter your choice: ");
 
             try {
@@ -409,12 +702,12 @@ public class Menu {
 
             switch (choice) {
                 case 1:
-                    this.printCardsInfo(insuranceCardController.getListOfInsuranceCards(), false);
+//                    this.printCardsInfo(insuranceCardController.getListOfInsuranceCards(), false);
                     do {
+                        this.printCardsInfo(insuranceCardController.getListOfInsuranceCards(), false);
                         System.out.println("1. View Detail Of A Insurance Card");
                         System.out.println("2. Sorting");
-                        System.out.println("3. Export To File");
-                        System.out.println("4. Return");
+                        System.out.println("3. Return");
                         System.out.print("Enter your choice: ");
                         try {
                             choice = scanner.nextInt();
@@ -429,16 +722,13 @@ public class Menu {
                                 detailInsuranceCard();
                                 break;
                             case 2:
-                                // Implementation for Sorting
+                                sortingCard();
                                 break;
                             case 3:
-                                // Implementation for Export To File
-                                break;
-                            case 4:
                                 System.out.println("Returning...");
                                 break;
                         }
-                    } while (choice != 4);
+                    } while (choice != 3);
                     break;
                 case 2: addCustomerAndCard(); break;
                 case 3:
@@ -500,13 +790,113 @@ public class Menu {
                     break;
 
                 case 4:
-                    // Implementation for Update Insurance Card
+                    try {
+                        System.out.println("\033[1m===== EDIT INSURANCE CARD =====\033[0m");
+                        this.printCardsInfo(insuranceCardController.getAll(), true);
+
+                        System.out.print("Enter card ID to edit: ");
+                        String id = scanner.nextLine();
+                        InsuranceCard insuranceCard = insuranceCardController.getOne(id);
+                        if (insuranceCard == null) {
+                            System.out.println("Card not found with the given ID.");
+                            cardMenu();
+                        }
+
+                        // Check if the card belongs to a PolicyHolder or a Dependent
+                        Customer cardHolder = insuranceCard.getCardHolder();
+                        if (cardHolder instanceof PolicyHolder) {
+                            System.out.print("Enter new policy owner name or press Enter to skip: ");
+                            String newPolicyOwner = scanner.nextLine();
+                            if (!newPolicyOwner.isEmpty()) {
+                                insuranceCard.setPolicyOwner(newPolicyOwner);
+
+                                List<Dependent> dependents = null;
+                                for (Customer customer : customerController.getListOfCustomers()) {
+                                    if (customer instanceof PolicyHolder && customer.getInsuranceCard().getCardNumber().equals(insuranceCard.getCardNumber())) {
+                                        dependents = ((PolicyHolder) customer).getDependents();
+                                    }
+                                }
+                                // Update the policy owner for all dependents of the policyholder
+                                for (Dependent dependent : dependents) {
+                                    for (InsuranceCard insuranceCard1 : insuranceCardController.getListOfInsuranceCards()) {
+                                        if (insuranceCard1.getCardHolder().getId().equals(dependent.getId())) {
+                                            insuranceCard1.setPolicyOwner(newPolicyOwner);
+                                        }
+                                    }
+                                }
+                                System.out.println("Updated policy owner of all dependents belong to this policy holder");
+                            }
+                        } else if (cardHolder instanceof Dependent) {
+                            System.out.println("Dependent is not allowed to edit policy owner");
+                        }
+
+                        SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy");
+                        Date claimdate = null;
+                        while (claimdate == null) {
+                            System.out.print("Enter expiration date (dd-MM-yyyy) or press Enter to skip: ");
+                            String claimDateInput = scanner.nextLine();
+                            if (!claimDateInput.isEmpty()) {
+                                try {
+                                    claimdate = formatter.parse(claimDateInput);
+                                    insuranceCard.setExpirationDate(claimdate);
+
+                                    // Update the expiration date in the claim list
+                                    for (Claim claim : claimController.getListOfClaims()) {
+                                        if (claim.getCardNumber().getCardNumber().equals(insuranceCard.getCardNumber())) {
+                                            claim.getCardNumber().setExpirationDate(claimdate);
+                                        }
+                                    }
+
+                                    // Update the expiration date in the customer list
+                                    for (Customer customer : customerController.getListOfCustomers()) {
+                                        if (customer.getInsuranceCard().getCardNumber().equals(insuranceCard.getCardNumber())) {
+                                            customer.getInsuranceCard().setExpirationDate(claimdate);
+                                        }
+                                    }
+
+                                } catch (Exception e) {
+                                    System.out.println("Invalid date format. Please try again.");
+                                }
+                            } else {
+                                break;
+                            }
+                        }
+
+                        claimController.writeInsuranceCardoFile();
+                        System.out.println("Insurance card updated");
+                    } catch (Exception e) {
+                        System.out.println("An error occurred. Please try again");
+                    }
                     break;
                 case 5:
+                    this.printCardsInfo(insuranceCardController.getAll(), true);
+                    do {
+                        System.out.println("The insurance card table is currently sorted by the " + claimController.currentCardOrder + " order");
+                        System.out.println("Would you like to change the order before saving the file?");
+                        System.out.println("1. Yes. moving to sorting menu");
+                        System.out.println("2. No, save the file");
+                        System.out.println("3. Return");
+                        System.out.print("Enter your choice: ");
+                        try {
+                            choice = scanner.nextInt();
+                            scanner.nextLine(); // Consume the newline character
+                        } catch (InputMismatchException e) {
+                            System.out.println("Invalid input. Please enter a number.");
+                            scanner.nextLine(); // Consume the invalid input
+                            continue; // Skip the rest of the loop and start over
+                        }
+                        switch (choice){
+                            case 1: sortingClaim(); break;
+                            case 2: savingClaimMenu();break;
+                            case 3:
+                                System.out.println("Returning...");
+                        }
+                    } while (choice != 3);
+                case 6:
                     System.out.println("Returning...");
                     break;
             }
-        } while (choice != 5);
+        } while (choice != 6);
     }
 
     private void customerMenu(){
@@ -531,12 +921,12 @@ public class Menu {
 
             switch (choice) {
                 case 1:
-                    this.printCustomersInfo(customerController.getListOfCustomers(), false);
+//                    this.printCustomersInfo(customerController.getListOfCustomers(), false);
                     do {
+                        this.printCustomersInfo(customerController.getListOfCustomers(), false);
                         System.out.println("1. View Detail Of A Customer (Claims list + Dependents list)");
                         System.out.println("2. Sorting");
-                        System.out.println("3. Export To File");
-                        System.out.println("4. Return");
+                        System.out.println("3. Return");
                         System.out.print("Enter your choice: ");
                         try {
                             choice = scanner.nextInt();
@@ -548,12 +938,11 @@ public class Menu {
                         }
                         switch (choice){
                             case 1: detailCustomer(); break;
-                            case 2:
+                            case 2: sortingCustomer(); break;
                             case 3:
-                            case 4:
                                 System.out.println("Returning...");
                         }
-                    } while (choice != 4);
+                    } while (choice != 3);
                     break;
                 case 2: addCustomerAndCard(); break;
                 case 3:
@@ -595,6 +984,42 @@ public class Menu {
                     }
                     break;
                 case 4:
+                    try {
+                        System.out.println("\033[1m===== CUSTOMER =====\033[0m");
+                        this.printCustomersInfo(customerController.getAll(), true);
+
+                        System.out.print("Enter customer ID to edit (c-xxxxxxx): ");
+                        String id = scanner.nextLine();
+                        Customer customer = customerController.getOne(id);
+                        if (customer == null) {
+                            System.out.println("Card not found with the given ID.");
+                            customerMenu();
+                        }
+
+                        System.out.print("Enter full name or press enter to skip: ");
+                        String fullname = scanner.nextLine();
+                        if (!fullname.isEmpty()){
+                            customer.setFullName(fullname);
+                            // Update full name in claim list
+                            for (Claim claim : claimController.getListOfClaims()) {
+                                if (claim.getInsuredPerson() != null && claim.getInsuredPerson().getId().equals(id)) {
+                                    claim.getInsuredPerson().setFullName(fullname);
+                                }
+                            }
+                            // Update full name in insurance card list
+                            for (InsuranceCard card : insuranceCardController.getListOfInsuranceCards()) {
+                                if (card.getCardHolder() != null && card.getCardHolder().getId().equals(id)) {
+                                    card.getCardHolder().setFullName(fullname);
+                                }
+                            }
+                        }
+
+                        claimController.writeCustomersToFile();
+                        System.out.println("Customer and related information updated");
+                    } catch (Exception e) {
+                        System.out.println("An error occurred. Please try again");
+                    }
+                    break;
                 case 5:
                     System.out.println("Returning...");
             }
@@ -796,6 +1221,122 @@ public class Menu {
             }
         } while (!confirmation.equals("y") && !confirmation.equals("n"));
         return confirmation.equals("y");
+    }
+
+    private void sortingClaim() {
+        this.printClaimsInfo(claimController.getAll(), false);
+        int choice = 0;
+        do {
+            System.out.println("SORTING BY:");
+            System.out.println("1. Claim Date: Oldest to Newest");
+            System.out.println("2. Claim Date: Newest to Oldest");
+            System.out.println("3. Exam Date: Oldest to Newest");
+            System.out.println("4. Exam Date: Newest to Oldest");
+            System.out.println("5. Claim Amount: Lowest to Highest");
+            System.out.println("6. Claim Amount: Highest to Lowest");
+            System.out.println("7. Return");
+            System.out.print("Enter your choice: ");
+            try {
+                choice = scanner.nextInt();
+                scanner.nextLine(); // Consume the newline character
+            } catch (InputMismatchException e) {
+                System.out.println("Invalid input. Please enter a number.");
+                scanner.nextLine(); // Consume the invalid input
+                continue; // Skip the rest of the loop and start over
+            }
+            switch (choice){
+                case 1:
+                    claimController.sortClaimsByClaimDate(true);
+                    this.printClaimsInfo(claimController.getAll(), false);
+                    break;
+                case 2:
+                    claimController.sortClaimsByClaimDate(false);
+                    this.printClaimsInfo(claimController.getAll(), false);
+                    break;
+                case 3:
+                    claimController.sortClaimsByExamDate(true);
+                    this.printClaimsInfo(claimController.getAll(), false);
+                    break;
+                case 4:
+                    claimController.sortClaimsByExamDate(false);
+                    this.printClaimsInfo(claimController.getAll(), false);
+                    break;
+                case 5:
+                    claimController.sortClaimsByClaimAmount(true);
+                    this.printClaimsInfo(claimController.getAll(), false);
+                    break;
+                case 6:
+                    claimController.sortClaimsByClaimAmount(false);
+                    this.printClaimsInfo(claimController.getAll(), false);
+                    break;
+                case 7:
+                    System.out.println("Returning...");
+            }
+        } while (choice != 7);
+    }
+
+    private void sortingCard() {
+        this.printCardsInfo(insuranceCardController.getAll(), false);
+        int choice = 0;
+        do {
+            System.out.println("SORTING BY:");
+            System.out.println("1. Expiration Date: earliest to latest");
+            System.out.println("2. Expiration Date: latest to earliest");
+            System.out.println("3. Return");
+            System.out.print("Enter your choice: ");
+            try {
+                choice = scanner.nextInt();
+                scanner.nextLine(); // Consume the newline character
+            } catch (InputMismatchException e) {
+                System.out.println("Invalid input. Please enter a number.");
+                scanner.nextLine(); // Consume the invalid input
+                continue; // Skip the rest of the loop and start over
+            }
+            switch (choice){
+                case 1:
+                    claimController.sortInsuranceCardByDate(true);
+                    this.printCardsInfo(claimController.getListOfInsuranceCards(), false);
+                    break;
+                case 2:
+                    claimController.sortInsuranceCardByDate(false);
+                    this.printCardsInfo(claimController.getListOfInsuranceCards(), false);
+                    break;
+                case 3:
+                    System.out.println("Returning...");
+            }
+        } while (choice != 3);
+    }
+
+    private void sortingCustomer() {
+        this.printCustomersInfo(customerController.getAll(), false);
+        int choice = 0;
+        do {
+            System.out.println("SORTING BY:");
+            System.out.println("1. Claim Count: least to most");
+            System.out.println("2. Claim Count: most to least");
+            System.out.println("3. Return");
+            System.out.print("Enter your choice: ");
+            try {
+                choice = scanner.nextInt();
+                scanner.nextLine(); // Consume the newline character
+            } catch (InputMismatchException e) {
+                System.out.println("Invalid input. Please enter a number.");
+                scanner.nextLine(); // Consume the invalid input
+                continue; // Skip the rest of the loop and start over
+            }
+            switch (choice){
+                case 1:
+                    claimController.sortCustomerByNumberOfClaim(true);
+                    this.printCustomersInfo(claimController.getListOfCustomers(), false);
+                    break;
+                case 2:
+                    claimController.sortCustomerByNumberOfClaim(false);
+                    this.printCustomersInfo(claimController.getListOfCustomers(), false);
+                    break;
+                case 3:
+                    System.out.println("Returning...");
+            }
+        } while (choice != 3);
     }
 
     private void detailClaim() {

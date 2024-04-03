@@ -19,6 +19,7 @@ public class InsuranceCardController {
         return instance;
     }
 
+
     public List<InsuranceCard> getAll(){
         return new ArrayList<>(this.getListOfInsuranceCards());
     }

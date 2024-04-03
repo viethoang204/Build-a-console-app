@@ -136,6 +136,7 @@ public class CustomerController {
         }
         return false;
     }
+
     public PolicyHolder addPolicyHolder(String fullName, InsuranceCard insuranceCard, List<Claim> claims, List<Dependent> dependents) {
         String id = generateUniqueCustomerID();
         PolicyHolder policyHolder = new PolicyHolder(id, fullName, insuranceCard, claims, dependents);

@@ -2,13 +2,16 @@ package Controller;
 
 import Model.*;
 
+import java.util.Comparator;
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class ClaimController implements ClaimProcessManager {
-
+    public String currentClaimOrder = "default";
+    public String currentCustomerOrder = "default";
+    public String currentCardOrder = "default";
     private static ClaimController instance;
     private ArrayList<Claim> listOfClaims;
     private ArrayList<Customer> listOfCustomers;
@@ -227,7 +230,6 @@ public class ClaimController implements ClaimProcessManager {
         }
     }
 
-
     public void loadInsuranceCardsFromFile() {
         loadCustomsFromFile();
         try {
@@ -392,7 +394,7 @@ public class ClaimController implements ClaimProcessManager {
             e.printStackTrace();
         }
     }
-    
+
     public void writeInsuranceCardoFile() {
         try (PrintWriter writer = new PrintWriter(new FileWriter("dataFile/insuranceCards.txt"))) {
             // Write the CSV header
@@ -432,4 +434,58 @@ public class ClaimController implements ClaimProcessManager {
         }
     }
 
+    public void sortClaimsByClaimDate(boolean ascending) {
+        if (ascending) {
+            // Sort claims in ascending order by date (earlier dates at the top)
+            listOfClaims.sort(Comparator.comparing(Claim::getClaimDate));
+            currentClaimOrder = "claim date from oldest to newest";
+        } else {
+            // Sort claims in descending order by date (later dates at the top)
+            listOfClaims.sort(Comparator.comparing(Claim::getClaimDate).reversed());
+            currentClaimOrder = "claim date from newest to oldest";
+        }
+    }
+
+    public void sortClaimsByExamDate(boolean ascending) {
+        if (ascending) {
+            listOfClaims.sort(Comparator.comparing(Claim::getExamDate));
+            currentClaimOrder = "exam date from oldest to newest";
+        } else {
+            // Sort claims in descending order by date (later dates at the top)
+            listOfClaims.sort(Comparator.comparing(Claim::getExamDate).reversed());
+            currentClaimOrder = "exam date from newest to oldest";
+        }
+    }
+
+    public void sortClaimsByClaimAmount(boolean ascending) {
+        if (ascending) {
+            listOfClaims.sort(Comparator.comparing(Claim::getClaimAmount));
+            currentClaimOrder = "claim amount from lowest oldest to highest";
+        } else {
+            // Sort claims in descending order by date (later dates at the top)
+            listOfClaims.sort(Comparator.comparing(Claim::getClaimAmount).reversed());
+            currentClaimOrder = "claim amount from lowest highest to oldest";
+        }
+    }
+
+    public void sortInsuranceCardByDate(boolean ascending) {
+        if (ascending) {
+            listOfInsuranceCards.sort(Comparator.comparing(InsuranceCard::getExpirationDate));
+            currentCardOrder = "expiration date from earliest to latest";
+        } else {
+            // Sort claims in descending order by date (later dates at the top)
+            listOfInsuranceCards.sort(Comparator.comparing(InsuranceCard::getExpirationDate).reversed());
+            currentCardOrder = "expiration date from earliest to latest";
+        }
+    }
+
+    public void sortCustomerByNumberOfClaim(boolean ascending) {
+        if (ascending) {
+            listOfCustomers.sort(Comparator.comparingInt(customer -> ((Customer)customer).getClaims().size()));
+            currentCustomerOrder = "claim count from least to most";
+        } else {
+            listOfCustomers.sort(Comparator.comparingInt(customer -> ((Customer)customer).getClaims().size()).reversed());
+            currentCustomerOrder = "claim count from most to least";
+        }
+    }
 }
