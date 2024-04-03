@@ -569,6 +569,8 @@ public class Menu {
                             lineEnd
                     );
                 }
+                System.out.println("File saved successfully at " + filePath);
+
             } catch (FileNotFoundException e) {
                 System.err.println("File not found: " + filePath);
             }
@@ -606,6 +608,7 @@ public class Menu {
                     out.print(policyOwner + delimiter);
                     out.print(new SimpleDateFormat("dd-MM-yyyy").format(card.getExpirationDate()) + lineEnd);
                 }
+                System.out.println("File saved successfully at " + filePath);
             } catch (FileNotFoundException e) {
                 System.err.println("File not found: " + filePath);
             }
@@ -658,6 +661,7 @@ public class Menu {
                             new SimpleDateFormat("dd-MM-yyyy").format(card.getExpirationDate()),
                             lineEnd);
                 }
+                System.out.println("File saved successfully at " + filePath);
             } catch (FileNotFoundException e) {
                 System.err.println("File not found: " + filePath);
             }
@@ -719,6 +723,7 @@ public class Menu {
                             lineEnd
                     );
                 }
+                System.out.println("File saved successfully at " + filePath);
             } catch (FileNotFoundException e) {
                 System.err.println("File not found: " + filePath);
             }
@@ -750,34 +755,52 @@ public class Menu {
 
             try {
                 out = new PrintWriter(filePath);
+
+                // Print the headers
+                out.print(String.join(delimiter, headers) + lineEnd);
+
+                // Print each data row
+                for (Claim claim : claims) {
+                    String[] rowData = {
+                            claim.getId(),
+                            formatDate(claim.getClaimDate()),
+                            claim.getInsuredPerson() != null ? claim.getInsuredPerson().getFullName() : "no data",
+                            claim.getCardNumber() != null ? claim.getCardNumber().getCardNumber() : "no data",
+                            formatDate(claim.getExamDate()),
+                            String.join(";", claim.getDocuments()),
+                            decimalFormat.format(claim.getClaimAmount()),
+                            claim.getStatus(),
+                            claim.getReceiverBankingInfo().printInfor()
+                    };
+                    out.print(String.join(delimiter, rowData) + lineEnd);
+                }
+                System.out.println("File saved successfully at " + filePath);
             } catch (FileNotFoundException e) {
                 System.err.println("File not found: " + filePath);
                 return; // Exit the method if file not found
             }
         } else {
             out = new PrintWriter(System.out);
+
+            // Print the headers
+            out.print(String.join(delimiter, headers) + lineEnd);
+
+            // Print each data row
+            for (Claim claim : claims) {
+                String[] rowData = {
+                        claim.getId(),
+                        formatDate(claim.getClaimDate()),
+                        claim.getInsuredPerson() != null ? claim.getInsuredPerson().getFullName() : "no data",
+                        claim.getCardNumber() != null ? claim.getCardNumber().getCardNumber() : "no data",
+                        formatDate(claim.getExamDate()),
+                        String.join(";", claim.getDocuments()),
+                        decimalFormat.format(claim.getClaimAmount()),
+                        claim.getStatus(),
+                        claim.getReceiverBankingInfo().printInfor()
+                };
+                out.print(String.join(delimiter, rowData) + lineEnd);
+            }
         }
-
-        // Print the headers
-        out.print(String.join(delimiter, headers) + lineEnd);
-
-        // Print each data row
-        for (Claim claim : claims) {
-            String[] rowData = {
-                    claim.getId(),
-                    formatDate(claim.getClaimDate()),
-                    claim.getInsuredPerson() != null ? claim.getInsuredPerson().getFullName() : "no data",
-                    claim.getCardNumber() != null ? claim.getCardNumber().getCardNumber() : "no data",
-                    formatDate(claim.getExamDate()),
-                    String.join(";", claim.getDocuments()),
-                    decimalFormat.format(claim.getClaimAmount()),
-                    claim.getStatus(),
-                    claim.getReceiverBankingInfo().printInfor()
-            };
-
-            out.print(String.join(delimiter, rowData) + lineEnd);
-        }
-
         out.close();
     }
 
@@ -802,42 +825,66 @@ public class Menu {
 
             try {
                 out = new PrintWriter(filePath);
+
+                // Print the headers
+                out.print(String.join(delimiter, headers) + lineEnd);
+
+                // Print each data row
+                for (Claim claim : claims) {
+                    String[] rowData = {
+                            claim.getId(),
+                            formatDate(claim.getClaimDate()),
+                            claim.getInsuredPerson() != null ? claim.getInsuredPerson().getFullName() : "no data",
+                            claim.getCardNumber() != null ? claim.getCardNumber().getCardNumber() : "no data",
+                            formatDate(claim.getExamDate()),
+                            String.join(";", claim.getDocuments()),
+                            decimalFormat.format(claim.getClaimAmount()),
+                            claim.getStatus(),
+                            claim.getReceiverBankingInfo().printInfor()
+                    };
+
+                    // Handle potential commas in the data
+                    for (int i = 0; i < rowData.length; i++) {
+                        rowData[i] = "\"" + rowData[i] + "\"";
+                    }
+
+                    out.print(String.join(delimiter, rowData) + lineEnd);
+                }
+                System.out.println("File saved successfully at " + filePath);
             } catch (FileNotFoundException e) {
                 System.err.println("File not found: " + filePath);
                 return; // Exit the method if file not found
             }
         } else {
             out = new PrintWriter(System.out);
-        }
 
-        // Print the headers
-        out.print(String.join(delimiter, headers) + lineEnd);
+            // Print the headers
+            out.print(String.join(delimiter, headers) + lineEnd);
 
-        // Print each data row
-        for (Claim claim : claims) {
-            String[] rowData = {
-                    claim.getId(),
-                    formatDate(claim.getClaimDate()),
-                    claim.getInsuredPerson() != null ? claim.getInsuredPerson().getFullName() : "no data",
-                    claim.getCardNumber() != null ? claim.getCardNumber().getCardNumber() : "no data",
-                    formatDate(claim.getExamDate()),
-                    String.join(";", claim.getDocuments()),
-                    decimalFormat.format(claim.getClaimAmount()),
-                    claim.getStatus(),
-                    claim.getReceiverBankingInfo().printInfor()
-            };
+            // Print each data row
+            for (Claim claim : claims) {
+                String[] rowData = {
+                        claim.getId(),
+                        formatDate(claim.getClaimDate()),
+                        claim.getInsuredPerson() != null ? claim.getInsuredPerson().getFullName() : "no data",
+                        claim.getCardNumber() != null ? claim.getCardNumber().getCardNumber() : "no data",
+                        formatDate(claim.getExamDate()),
+                        String.join(";", claim.getDocuments()),
+                        decimalFormat.format(claim.getClaimAmount()),
+                        claim.getStatus(),
+                        claim.getReceiverBankingInfo().printInfor()
+                };
 
-            // Handle potential commas in the data
-            for (int i = 0; i < rowData.length; i++) {
-                rowData[i] = "\"" + rowData[i] + "\"";
+                // Handle potential commas in the data
+                for (int i = 0; i < rowData.length; i++) {
+                    rowData[i] = "\"" + rowData[i] + "\"";
+                }
+
+                out.print(String.join(delimiter, rowData) + lineEnd);
             }
-
-            out.print(String.join(delimiter, rowData) + lineEnd);
         }
-
         out.close();
     }
-
     public void saveCustomerListAsTable(List<Customer> customers, boolean saveFile) {
         DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.US);
         symbols.setDecimalSeparator('.'); // Ensure the decimal separator is dot and not comma
@@ -904,31 +951,48 @@ public class Menu {
 
             try {
                 out = new PrintWriter(filePath);
+
+                out.println(fullTitle);
+                out.printf(borderFormat);
+                out.printf(headerFormat, (Object[]) headers);
+                out.printf(lineFormat);
+
+                for (Customer customer : customers) {
+                    Object[] rowData = {
+                            customer.getId(),
+                            customer.getFullName(),
+                            customer.getInsuranceCard() != null ? customer.getInsuranceCard().getCardNumber() : "N/A",
+                            customer instanceof PolicyHolder ? "Policy Holder" : "Dependent"
+                    };
+                    out.printf(headerFormat, rowData);
+                    out.printf(lineFormat);
+                }
+                System.out.println("File saved successfully at " + filePath);
             } catch (FileNotFoundException e) {
                 System.err.println("File not found: " + filePath);
                 return; // Exit the method if file not found
             }
         } else {
             out = new PrintWriter(System.out);
-        }
-        out.println(fullTitle);
-        out.printf(borderFormat);
-        out.printf(headerFormat, (Object[]) headers);
-        out.printf(lineFormat);
 
-        for (Customer customer : customers) {
-            Object[] rowData = {
-                    customer.getId(),
-                    customer.getFullName(),
-                    customer.getInsuranceCard() != null ? customer.getInsuranceCard().getCardNumber() : "N/A",
-                    customer instanceof PolicyHolder ? "Policy Holder" : "Dependent"
-            };
-            out.printf(headerFormat, rowData);
+            out.println(fullTitle);
+            out.printf(borderFormat);
+            out.printf(headerFormat, (Object[]) headers);
             out.printf(lineFormat);
+
+            for (Customer customer : customers) {
+                Object[] rowData = {
+                        customer.getId(),
+                        customer.getFullName(),
+                        customer.getInsuranceCard() != null ? customer.getInsuranceCard().getCardNumber() : "N/A",
+                        customer instanceof PolicyHolder ? "Policy Holder" : "Dependent"
+                };
+                out.printf(headerFormat, rowData);
+                out.printf(lineFormat);
+            }
         }
         out.close();
     }
-
     public void saveCardListAsTable(List<InsuranceCard> insuranceCards, boolean saveFile) {
         DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.US);
         symbols.setDecimalSeparator('.'); // Ensure the decimal separator is dot and not comma
@@ -986,11 +1050,12 @@ public class Menu {
         String fullTitle = titlePaddingBefore + title + titlePaddingAfter;
 
         PrintWriter out = null;
+        String filePath = null; // Declare filePath here
         if (saveFile) {
             // Prompt user for file name here
             System.out.print("Enter file name to save as TXT: ");
             String fileName = scanner.nextLine();
-            String filePath = "savedFile/" + fileName+ ".txt"; // Adjust directory as needed
+            filePath = "savedFile/" + fileName+ ".txt"; // Adjust directory as needed
 
             try {
                 out = new PrintWriter(filePath);
@@ -1013,9 +1078,12 @@ public class Menu {
                     card.getCardHolder().getFullName(),
                     policyOwner,
                     new SimpleDateFormat("dd-MM-yyyy").format(card.getExpirationDate())
-        };
+            };
             out.printf(headerFormat, rowData);
             out.printf(lineFormat);
+        }
+        if (saveFile) {
+            System.out.println("File saved successfully at " + filePath);
         }
         out.close();
     }
@@ -1086,11 +1154,12 @@ public class Menu {
         String fullTitle = titlePaddingBefore + title + titlePaddingAfter;
 
         PrintWriter out = null;
+        String filePath = null; // Declare filePath here
         if (saveFile) {
             // Prompt user for file name here
             System.out.print("Enter file name to save as TXT: ");
             String fileName = scanner.nextLine();
-            String filePath = "savedFile/" + fileName+ ".txt"; // Adjust directory as needed
+            filePath = "savedFile/" + fileName+ ".txt"; // Adjust directory as needed
 
             try {
                 out = new PrintWriter(filePath);
@@ -1120,6 +1189,9 @@ public class Menu {
             };
             out.printf(headerFormat, rowData);
             out.printf(lineFormat);
+        }
+        if (saveFile) {
+            System.out.println("File saved successfully at " + filePath);
         }
         out.close();
     }
