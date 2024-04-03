@@ -417,9 +417,11 @@ public class Menu {
                                 System.out.println("Returning...");
                         }
                     } while (choice != 3);
+                    break;
                 case 6:
                     System.out.println("Returning...");
                     view();
+                    break;
             }
         } while (choice!=6);
     }
@@ -428,8 +430,8 @@ public class Menu {
         int choice = 0;
         do {
             System.out.println("1. Save as table format TXT");
-            System.out.println("2. Save as CSV");
-            System.out.println("3. Save as TSV");
+            System.out.println("2. Save as TSV");
+            System.out.println("3. Save as CSV");
             System.out.println("4. Return");
             System.out.print("Enter your choice: ");
             try {
@@ -458,6 +460,273 @@ public class Menu {
                     claimMenu();
             }
         } while (choice != 4);
+    }
+
+    private void savingCustomerMenu() {
+        int choice = 0;
+        do {
+            System.out.println("1. Save as table format TXT");
+            System.out.println("2. Save as TSV");
+            System.out.println("3. Save as CSV");
+            System.out.println("4. Return");
+            System.out.print("Enter your choice: ");
+            try {
+                choice = scanner.nextInt();
+                scanner.nextLine(); // Consume the newline character
+            } catch (InputMismatchException e) {
+                System.out.println("Invalid input. Please enter a number.");
+                scanner.nextLine(); // Consume the invalid input
+                continue; // Skip the rest of the loop and start over
+            }
+            switch (choice){
+                case 1:
+                    saveCustomerListAsTable(claimController.getListOfCustomers(), true);
+                    customerMenu();
+                    break;
+                case 2:
+                    saveCustomerListAsTsv(claimController.getListOfCustomers(), true);
+                    customerMenu();
+                    break;
+                case 3:
+                    saveCustomerListAsCsv(claimController.getListOfCustomers(), true);
+                    customerMenu();
+                    break;
+                case 4:
+                    System.out.println("Returning...");
+                    customerMenu();
+            }
+        } while (choice != 4);
+    }
+
+    private void savingCardMenu() {
+        int choice = 0;
+        do {
+            System.out.println("1. Save as table format TXT");
+            System.out.println("2. Save as TSV");
+            System.out.println("3. Save as CSV");
+            System.out.println("4. Return");
+            System.out.print("Enter your choice: ");
+            try {
+                choice = scanner.nextInt();
+                scanner.nextLine(); // Consume the newline character
+            } catch (InputMismatchException e) {
+                System.out.println("Invalid input. Please enter a number.");
+                scanner.nextLine(); // Consume the invalid input
+                continue; // Skip the rest of the loop and start over
+            }
+            switch (choice){
+                case 1:
+                    saveCardListAsTable(claimController.getListOfInsuranceCards(), true);
+                    cardMenu();
+                    break;
+                case 2:
+                    saveCardListAsTsv(claimController.getListOfInsuranceCards(), true);
+                    cardMenu();
+                    break;
+                case 3:
+                    saveCardListAsCsv(claimController.getListOfInsuranceCards(), true);
+                    cardMenu();
+                    break;
+                case 4:
+                    System.out.println("Returning...");
+                    cardMenu();
+            }
+        } while (choice != 4);
+    }
+
+    public void saveCustomerListAsTsv(List<Customer> customers, boolean saveFile) {
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.US);
+        symbols.setDecimalSeparator('.'); // Ensure the decimal separator is dot and not comma
+        DecimalFormat decimalFormat = new DecimalFormat("0.#", symbols);
+        decimalFormat.setMaximumFractionDigits(2);
+        String delimiter = "\t";
+        String lineEnd = "\r\n";
+        String[] headers = {
+                "ID", "Full Name", "Insurance Card", "Title" // Assuming "Insured Person" was a mistake and removed it
+        };
+
+        if (saveFile) {
+            System.out.print("Enter file name to save as TSV: ");
+            String fileName = scanner.nextLine();
+            String filePath = "savedFile/" + fileName + ".tsv"; // Adjust directory as needed
+
+            try (PrintWriter out = new PrintWriter(filePath)) {
+                // Print the headers
+                out.println(String.join(delimiter, headers));
+
+                // Print each data row
+                for (Customer customer : customers) {
+                    String title = customer instanceof PolicyHolder ? "Policy Holder" : "Dependent";
+                    String insuranceCardNumber = customer.getInsuranceCard() != null ? customer.getInsuranceCard().getCardNumber() : "N/A";
+                    out.printf("%s%s%s%s%s%s%s%s",
+                            customer.getId(),
+                            delimiter,
+                            customer.getFullName(),
+                            delimiter,
+                            insuranceCardNumber,
+                            delimiter,
+                            title,
+                            lineEnd
+                    );
+                }
+            } catch (FileNotFoundException e) {
+                System.err.println("File not found: " + filePath);
+            }
+        } else {
+            try (PrintWriter out = new PrintWriter(System.out)) {
+                // Similar printing logic here for console output, if needed
+            }
+        }
+    }
+
+    public void saveCardListAsTsv(List<InsuranceCard> insuranceCards, boolean saveFile) {
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.US);
+        symbols.setDecimalSeparator('.'); // Ensure the decimal separator is dot and not comma
+        DecimalFormat decimalFormat = new DecimalFormat("0.#", symbols);
+        decimalFormat.setMaximumFractionDigits(2);
+        String delimiter = "\t";
+        String lineEnd = "\r\n";
+        String[] headers = {"Card Number", "Card Holder", "Policy Owner", "Expiration Date"};
+
+        if (saveFile) {
+            System.out.print("Enter file name to save as TSV: ");
+            Scanner scanner = new Scanner(System.in);
+            String fileName = scanner.nextLine();
+            String filePath = "savedFile/" + fileName + ".tsv"; // Adjust directory as needed
+
+            try (PrintWriter out = new PrintWriter(filePath)) {
+                // Print the headers
+                out.println(String.join(delimiter, headers));
+
+                // Print each data row
+                for (InsuranceCard card : insuranceCards) {
+                    String policyOwner = card.getPolicyOwner() != null ? card.getPolicyOwner() : "N/A";
+                    out.print(card.getCardNumber() + delimiter);
+                    out.print(card.getCardHolder().getFullName() + delimiter);
+                    out.print(policyOwner + delimiter);
+                    out.print(new SimpleDateFormat("dd-MM-yyyy").format(card.getExpirationDate()) + lineEnd);
+                }
+            } catch (FileNotFoundException e) {
+                System.err.println("File not found: " + filePath);
+            }
+        } else {
+            try (PrintWriter out = new PrintWriter(System.out)) {
+                // Print the headers
+                out.println(String.join(delimiter, headers));
+
+                // Print each data row for console output
+                for (InsuranceCard card : insuranceCards) {
+                    String policyOwner = card.getPolicyOwner() != null ? card.getPolicyOwner() : "N/A";
+                    out.print(card.getCardNumber() + delimiter);
+                    out.print(card.getCardHolder().getFullName() + delimiter);
+                    out.print(policyOwner + delimiter);
+                    out.print(new SimpleDateFormat("dd-MM-yyyy").format(card.getExpirationDate()) + lineEnd);
+                }
+            }
+        }
+    }
+
+    public void saveCardListAsCsv(List<InsuranceCard> insuranceCards, boolean saveFile) {
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.US);
+        symbols.setDecimalSeparator('.'); // Ensure the decimal separator is dot and not comma
+        DecimalFormat decimalFormat = new DecimalFormat("0.#", symbols);
+        decimalFormat.setMaximumFractionDigits(2);
+        String delimiter = ",";
+        String lineEnd = "\r\n";
+        String[] headers = {"Card Number", "Card Holder", "Policy Owner", "Expiration Date"};
+
+        if (saveFile) {
+            System.out.print("Enter file name to save as CSV: ");
+            Scanner scanner = new Scanner(System.in);
+            String fileName = scanner.nextLine();
+            String filePath = "savedFile/" + fileName + ".csv"; // Adjust directory as needed
+
+            try (PrintWriter out = new PrintWriter(filePath)) {
+                // Print the headers
+                out.println(String.join(delimiter, headers));
+
+                // Print each data row
+                for (InsuranceCard card : insuranceCards) {
+                    String policyOwner = card.getPolicyOwner() != null ? card.getPolicyOwner() : "N/A";
+                    out.printf("\"%s\"%s\"%s\"%s\"%s\"%s\"%s\"%s",
+                            card.getCardNumber(),
+                            delimiter,
+                            card.getCardHolder().getFullName(),
+                            delimiter,
+                            policyOwner,
+                            delimiter,
+                            new SimpleDateFormat("dd-MM-yyyy").format(card.getExpirationDate()),
+                            lineEnd);
+                }
+            } catch (FileNotFoundException e) {
+                System.err.println("File not found: " + filePath);
+            }
+        } else {
+            try (PrintWriter out = new PrintWriter(System.out)) {
+                // Print the headers for console output
+                out.println(String.join(delimiter, headers));
+
+                // Print each data row for console output
+                for (InsuranceCard card : insuranceCards) {
+                    String policyOwner = card.getPolicyOwner() != null ? card.getPolicyOwner() : "N/A";
+                    out.printf("\"%s\"%s\"%s\"%s\"%s\"%s\"%s\"%s",
+                            card.getCardNumber(),
+                            delimiter,
+                            card.getCardHolder().getFullName(),
+                            delimiter,
+                            policyOwner,
+                            delimiter,
+                            new SimpleDateFormat("dd-MM-yyyy").format(card.getExpirationDate()),
+                            lineEnd);
+                }
+            }
+        }
+    }
+
+    public void saveCustomerListAsCsv(List<Customer> customers, boolean saveFile) {
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.US);
+        symbols.setDecimalSeparator('.'); // Ensure the decimal separator is dot and not comma
+        DecimalFormat decimalFormat = new DecimalFormat("0.#", symbols);
+        decimalFormat.setMaximumFractionDigits(2);
+        String delimiter = ",";
+        String lineEnd = "\r\n";
+        String[] headers = {
+                "ID", "Full Name", "Insurance Card", "Title"
+        };
+
+        if (saveFile) {
+            System.out.print("Enter file name to save as CSV: ");
+            String fileName = scanner.nextLine();
+            String filePath = "savedFile/" + fileName + ".csv"; // Adjust directory as needed
+
+            try (PrintWriter out = new PrintWriter(filePath)) {
+                // Print the headers, enclosing each header in quotes
+                out.println(String.join(delimiter, Arrays.stream(headers).map(header -> "\"" + header + "\"").toArray(String[]::new)));
+
+                // Print each data row
+                for (Customer customer : customers) {
+                    String title = customer instanceof PolicyHolder ? "Policy Holder" : "Dependent";
+                    String insuranceCardNumber = customer.getInsuranceCard() != null ? customer.getInsuranceCard().getCardNumber() : "N/A";
+                    // Enclose each field in quotes and join with delimiter
+                    out.printf("\"%s\"%s\"%s\"%s\"%s\"%s\"%s\"%s",
+                            customer.getId(),
+                            delimiter,
+                            customer.getFullName(),
+                            delimiter,
+                            insuranceCardNumber,
+                            delimiter,
+                            title,
+                            lineEnd
+                    );
+                }
+            } catch (FileNotFoundException e) {
+                System.err.println("File not found: " + filePath);
+            }
+        } else {
+            // If not saving to a file, consider how you want to handle console output.
+            // This block could be adapted for console output similarly to the file output logic, with proper data formatting.
+            System.out.println("Saving to console not implemented.");
+        }
     }
 
     public void saveClaimListAsTsv(List<Claim> claims, boolean saveFile) {
@@ -569,6 +838,188 @@ public class Menu {
         out.close();
     }
 
+    public void saveCustomerListAsTable(List<Customer> customers, boolean saveFile) {
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.US);
+        symbols.setDecimalSeparator('.'); // Ensure the decimal separator is dot and not comma
+        DecimalFormat decimalFormat = new DecimalFormat("0.#", symbols);
+        decimalFormat.setMaximumFractionDigits(2);
+
+        // Column headers
+        String[] headers = {"ID", "Full Name", "Insurance Card", "Title"};
+
+        // Initialize column widths to header lengths
+        int[] maxLengths = new int[headers.length];
+        for (int i = 0; i < headers.length; i++) {
+            maxLengths[i] = headers[i].length();
+        }
+
+        // Update column widths based on the data
+        for (Customer customer : customers) {
+            maxLengths[0] = Math.max(maxLengths[0], customer.getId().length());
+            maxLengths[1] = Math.max(maxLengths[1], customer.getFullName().length());
+            String insuranceCardNumber = customer.getInsuranceCard() != null ? customer.getInsuranceCard().getCardNumber() : "N/A";
+            maxLengths[2] = Math.max(maxLengths[2], insuranceCardNumber.length());
+            String title = customer instanceof PolicyHolder ? "Policy Holder" : "Dependent";
+            maxLengths[3] = Math.max(maxLengths[3], title.length());
+        }
+
+        // Create the header format with appropriate spacing
+        String headerFormat = "|";
+        String lineFormat = "+";
+        String borderFormat = "+";
+        for (int width : maxLengths) {
+            headerFormat += " %-"+ (width + 2) +"s|";  // +2 for padding
+            lineFormat += new String(new char[width + 3]).replace('\0', '-') + "+";
+            borderFormat += new String(new char[width + 3]).replace('\0', '-') + "+";
+        }
+        headerFormat += "%n";
+        lineFormat = lineFormat.substring(0, lineFormat.length() - 1) + "%n";
+        borderFormat = borderFormat.substring(0, borderFormat.length() - 1) + "%n";
+
+        // Calculate the total width of the table including border characters
+        int totalWidth = Arrays.stream(maxLengths).sum() + maxLengths.length * 3 + 1;
+
+        // Calculate the width of the borders
+        int borderWidth = maxLengths.length + 1;
+
+        // Create the title with the correct padding to make it the same length as the table width including the borders
+        String title = "CLAIM LIST";
+        int titleWidth = title.length();
+        int totalPadding = totalWidth - titleWidth;
+        int paddingBefore = totalPadding / 2 + borderWidth / 2; // adding half the border width to the padding
+        int paddingAfter = totalPadding - paddingBefore + borderWidth / 2 + 1;
+
+        String titlePaddingBefore = new String(new char[paddingBefore]).replace('\0', '=');
+        String titlePaddingAfter = new String(new char[paddingAfter]).replace('\0', '=');
+
+        // Combine parts to create the full title
+        String fullTitle = titlePaddingBefore + title + titlePaddingAfter;
+
+        PrintWriter out = null;
+        if (saveFile) {
+            // Prompt user for file name here
+            System.out.print("Enter file name to save as TXT: ");
+            String fileName = scanner.nextLine();
+            String filePath = "savedFile/" + fileName+ ".txt"; // Adjust directory as needed
+
+            try {
+                out = new PrintWriter(filePath);
+            } catch (FileNotFoundException e) {
+                System.err.println("File not found: " + filePath);
+                return; // Exit the method if file not found
+            }
+        } else {
+            out = new PrintWriter(System.out);
+        }
+        out.println(fullTitle);
+        out.printf(borderFormat);
+        out.printf(headerFormat, (Object[]) headers);
+        out.printf(lineFormat);
+
+        for (Customer customer : customers) {
+            Object[] rowData = {
+                    customer.getId(),
+                    customer.getFullName(),
+                    customer.getInsuranceCard() != null ? customer.getInsuranceCard().getCardNumber() : "N/A",
+                    customer instanceof PolicyHolder ? "Policy Holder" : "Dependent"
+            };
+            out.printf(headerFormat, rowData);
+            out.printf(lineFormat);
+        }
+        out.close();
+    }
+
+    public void saveCardListAsTable(List<InsuranceCard> insuranceCards, boolean saveFile) {
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.US);
+        symbols.setDecimalSeparator('.'); // Ensure the decimal separator is dot and not comma
+        DecimalFormat decimalFormat = new DecimalFormat("0.#", symbols);
+        decimalFormat.setMaximumFractionDigits(2);
+
+        // Column headers
+        String[] headers = {"Card Number","Card Holder","Policy Owner","Expiration Date"};
+
+        // Initialize column widths to header lengths
+        int[] maxLengths = new int[headers.length];
+        for (int i = 0; i < headers.length; i++) {
+            maxLengths[i] = headers[i].length();
+        }
+
+        // Update column widths based on the data
+        for (InsuranceCard card : insuranceCards) {
+            maxLengths[0] = Math.max(maxLengths[0], card.getCardNumber().length());
+            maxLengths[1] = Math.max(maxLengths[1], card.getCardHolder().getFullName().length());
+            String policyOwner = card.getPolicyOwner() != null ? card.getPolicyOwner() : "N/A";
+            maxLengths[2] = Math.max(maxLengths[2], policyOwner.length());
+            maxLengths[3] = Math.max(maxLengths[3], new SimpleDateFormat("dd-MM-yyyy").format(card.getExpirationDate()).length());
+        }
+
+        // Create the header format with appropriate spacing
+        String headerFormat = "|";
+        String lineFormat = "+";
+        String borderFormat = "+";
+        for (int width : maxLengths) {
+            headerFormat += " %-"+ (width + 2) +"s|";  // +2 for padding
+            lineFormat += new String(new char[width + 3]).replace('\0', '-') + "+";
+            borderFormat += new String(new char[width + 3]).replace('\0', '-') + "+";
+        }
+        headerFormat += "%n";
+        lineFormat = lineFormat.substring(0, lineFormat.length() - 1) + "%n";
+        borderFormat = borderFormat.substring(0, borderFormat.length() - 1) + "%n";
+
+        // Calculate the total width of the table including border characters
+        int totalWidth = Arrays.stream(maxLengths).sum() + maxLengths.length * 3 + 1;
+
+        // Calculate the width of the borders
+        int borderWidth = maxLengths.length + 1;
+
+        // Create the title with the correct padding to make it the same length as the table width including the borders
+        String title = "CARD LIST";
+        int titleWidth = title.length();
+        int totalPadding = totalWidth - titleWidth;
+        int paddingBefore = totalPadding / 2 + borderWidth / 2; // adding half the border width to the padding
+        int paddingAfter = totalPadding - paddingBefore + borderWidth / 2 + 1;
+
+        String titlePaddingBefore = new String(new char[paddingBefore]).replace('\0', '=');
+        String titlePaddingAfter = new String(new char[paddingAfter]).replace('\0', '=');
+
+        // Combine parts to create the full title
+        String fullTitle = titlePaddingBefore + title + titlePaddingAfter;
+
+        PrintWriter out = null;
+        if (saveFile) {
+            // Prompt user for file name here
+            System.out.print("Enter file name to save as TXT: ");
+            String fileName = scanner.nextLine();
+            String filePath = "savedFile/" + fileName+ ".txt"; // Adjust directory as needed
+
+            try {
+                out = new PrintWriter(filePath);
+            } catch (FileNotFoundException e) {
+                System.err.println("File not found: " + filePath);
+                return; // Exit the method if file not found
+            }
+        } else {
+            out = new PrintWriter(System.out);
+        }
+        out.println(fullTitle);
+        out.printf(borderFormat);
+        out.printf(headerFormat, (Object[]) headers);
+        out.printf(lineFormat);
+
+        for (InsuranceCard card : insuranceCards) {
+            String policyOwner = card.getPolicyOwner() != null ? card.getPolicyOwner() : "N/A";
+            Object[] rowData = {
+                    card.getCardNumber(),
+                    card.getCardHolder().getFullName(),
+                    policyOwner,
+                    new SimpleDateFormat("dd-MM-yyyy").format(card.getExpirationDate())
+        };
+            out.printf(headerFormat, rowData);
+            out.printf(lineFormat);
+        }
+        out.close();
+    }
+
     public void saveClaimListAsTable(List<Claim> claims, boolean saveFile) {
         DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.US);
         symbols.setDecimalSeparator('.'); // Ensure the decimal separator is dot and not comma
@@ -651,13 +1102,9 @@ public class Menu {
             out = new PrintWriter(System.out);
         }
         out.println(fullTitle);
-//        out.println(title.replace(' ', '='));
-        // Print the headers
         out.printf(borderFormat);
-        // Print the headers
         out.printf(headerFormat, (Object[]) headers);
         out.printf(lineFormat);
-        // Print each data row
 
         for (Claim claim : claims) {
             Object[] rowData = {
@@ -674,8 +1121,6 @@ public class Menu {
             out.printf(headerFormat, rowData);
             out.printf(lineFormat);
         }
-
-//        out.printf(borderFormat);
         out.close();
     }
 
@@ -886,14 +1331,16 @@ public class Menu {
                             continue; // Skip the rest of the loop and start over
                         }
                         switch (choice){
-                            case 1: sortingClaim(); break;
-                            case 2: savingClaimMenu();break;
+                            case 1: sortingCard(); break;
+                            case 2: savingCardMenu();break;
                             case 3:
                                 System.out.println("Returning...");
                         }
                     } while (choice != 3);
+                    break;
                 case 6:
                     System.out.println("Returning...");
+                    view();
                     break;
             }
         } while (choice != 6);
@@ -907,7 +1354,8 @@ public class Menu {
             System.out.println("2. Add Customer And His/Her Insurance Card");
             System.out.println("3. Remove Customer");
             System.out.println("4. Edit Customer");
-            System.out.println("5. Return");
+            System.out.println("5. Save as file");
+            System.out.println("6. Return");
             System.out.print("Enter your choice: ");
 
             try {
@@ -1021,9 +1469,36 @@ public class Menu {
                     }
                     break;
                 case 5:
+                    this.printCustomersInfo(customerController.getAll(), true);
+                    do {
+                        System.out.println("The customer table is currently sorted by the " + claimController.currentCustomerOrder + " order");
+                        System.out.println("Would you like to change the order before saving the file?");
+                        System.out.println("1. Yes. moving to sorting menu");
+                        System.out.println("2. No, save the file");
+                        System.out.println("3. Return");
+                        System.out.print("Enter your choice: ");
+                        try {
+                            choice = scanner.nextInt();
+                            scanner.nextLine(); // Consume the newline character
+                        } catch (InputMismatchException e) {
+                            System.out.println("Invalid input. Please enter a number.");
+                            scanner.nextLine(); // Consume the invalid input
+                            continue; // Skip the rest of the loop and start over
+                        }
+                        switch (choice){
+                            case 1: sortingCustomer(); break;
+                            case 2: savingCustomerMenu();break;
+                            case 3:
+                                System.out.println("Returning...");
+                        }
+                    } while (choice != 3);
+                    break;
+                case 6:
                     System.out.println("Returning...");
+                    view();
+                    break;
             }
-        } while (choice!=5);
+        } while (choice!=6);
     }
 
     private boolean cardExists(String cardnumber) {
@@ -1913,20 +2388,6 @@ public class Menu {
             String claimsString = customer.getClaims().isEmpty() ? "no claim yet" : customer.getClaims().stream()
                     .map(Claim::getId)
                     .collect(Collectors.joining(", "));
-//            maxLengths[4] = Math.max(maxLengths[4], claimsString.length());
-//            if (customer instanceof PolicyHolder) {
-//                PolicyHolder policyHolder = (PolicyHolder) customer;
-//                if (!policyHolder.getDependents().isEmpty()) {
-//                    maxLengths[5] = Math.max(maxLengths[5], policyHolder.getDependents().stream()
-//                            .map(Dependent::getId) // Assuming you want to print full names
-//                            .collect(Collectors.joining(", ")).length());
-//                } else {
-                    // No dependents, leave the length as is (could be the header length if no dependents at all)
-//                }
-//            } else {
-//                // Account for the length of the string "he/she is a dependent"
-//                maxLengths[4] = Math.max(maxLengths[4], "he/she is a dependent".length());
-//            }
             String title = customer instanceof PolicyHolder ? "Policy Holder" : "Dependent";
             maxLengths[3] = Math.max(maxLengths[3], title.length());
         }
@@ -1949,16 +2410,6 @@ public class Menu {
 
         // Print the data rows
         for (Customer customer : customers) {
-//            String claimIds = customer.getClaims().isEmpty() ? "no claim yet" : String.join(", ", customer.getClaims().stream()
-//                    .map(Claim::getId)
-//                    .collect(Collectors.toList()));
-//            String dependentsText = "";
-//            if (customer instanceof PolicyHolder) {
-//                PolicyHolder policyHolder = (PolicyHolder) customer;
-//                dependentsText = policyHolder.getDependents().isEmpty() ? "no dependent yet" : String.join(", ", policyHolder.getDependents().stream()
-//                        .map(Customer::getId)
-//                        .collect(Collectors.toList()));
-//            }
 
             String title = customer instanceof PolicyHolder ? "Policy Holder" : "Dependent";
 
@@ -1967,8 +2418,6 @@ public class Menu {
                     customer.getFullName(),
                     customer.getInsuranceCard().getCardNumber(),
                     title
-//                    claimIds,
-//                    dependentsText
                     );
         }
     }
