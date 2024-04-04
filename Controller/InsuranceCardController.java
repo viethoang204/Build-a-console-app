@@ -1,14 +1,15 @@
 package Controller;
 
-import Model.Claim;
 import Model.Customer;
 import Model.InsuranceCard;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
 public class InsuranceCardController {
+    public String currentCardOrder = "default";
     private ClaimController claimController;
     private static InsuranceCardController instance;
 
@@ -19,21 +20,12 @@ public class InsuranceCardController {
         return instance;
     }
 
-
     public List<InsuranceCard> getAll(){
         return new ArrayList<>(this.getListOfInsuranceCards());
     }
 
     public InsuranceCardController() {
         this.claimController = ClaimController.getInstance();
-    }
-
-    public ArrayList<Claim> getListOfClaims() {
-        return claimController.getListOfClaims();
-    }
-
-    public ArrayList<Customer> getListOfCustomers() {
-        return claimController.getListOfCustomers();
     }
 
     public ArrayList<InsuranceCard> getListOfInsuranceCards() {
@@ -48,7 +40,7 @@ public class InsuranceCardController {
         if(claimController.getListOfInsuranceCards().removeIf(insuranceCard -> insuranceCard.getCardNumber().equals(insuranceCardNumber))){
             claimController.writeInsuranceCardoFile();
             return true;
-        };
+        }
         return false;
     }
 
@@ -58,5 +50,16 @@ public class InsuranceCardController {
         this.getListOfInsuranceCards().add(newCard);
 //        claimController.writeInsuranceCardoFile();
         return newCard;
+    }
+
+    public void sortInsuranceCardByDate(boolean ascending) {
+        if (ascending) {
+            claimController.getListOfInsuranceCards().sort(Comparator.comparing(InsuranceCard::getExpirationDate));
+            currentCardOrder = "expiration date from earliest to latest";
+        } else {
+            // Sort claims in descending order by date (later dates at the top)
+            claimController.getListOfInsuranceCards().sort(Comparator.comparing(InsuranceCard::getExpirationDate).reversed());
+            currentCardOrder = "expiration date from earliest to latest";
+        }
     }
 }

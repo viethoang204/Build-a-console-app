@@ -10,8 +10,7 @@ import java.util.stream.Collectors;
 
 public class ClaimController implements ClaimProcessManager {
     public String currentClaimOrder = "default";
-    public String currentCustomerOrder = "default";
-    public String currentCardOrder = "default";
+
     private static ClaimController instance;
     private ArrayList<Claim> listOfClaims;
     private ArrayList<Customer> listOfCustomers;
@@ -37,6 +36,14 @@ public class ClaimController implements ClaimProcessManager {
         for (InsuranceCard card : listOfInsuranceCards) {
             if (card.getCardNumber().equals(cardNumber)) {
                 return card;
+            }
+        }
+        return null;
+    }
+    public String getInsuranceCardNumberById(String id) {
+        for (InsuranceCard card : listOfInsuranceCards) {
+            if (card.getCardHolder().getId().equals(id.trim())) {
+                return card.getCardNumber();
             }
         }
         return null;
@@ -124,14 +131,14 @@ public class ClaimController implements ClaimProcessManager {
         try {
             ArrayList<Customer> customers = new ArrayList<Customer>();
             Scanner fileScanner = new Scanner(new File("dataFile/customers.txt"));
-            fileScanner.nextLine(); // Bỏ qua tiêu đề
+            fileScanner.nextLine();
             while (fileScanner.hasNext()) {
                 String line = fileScanner.nextLine();
-                String[] parts = line.split(","); // Sử dụng split thay vì StringTokenizer để dễ dàng xác định số phần tử
+                String[] parts = line.split(",");
                 String id = parts[0];
                 String fullName = parts[1];
                 InsuranceCard cardNumber = getInsuranceCardById(parts[2].trim());
-                String[] claimsArray = parts[3].substring(1, parts[3].length() - 1).split(";"); // Loại bỏ dấu ngoặc và split
+                String[] claimsArray = parts[3].substring(1, parts[3].length() - 1).split(";");
 
                 List<Claim> listOfClaims = new ArrayList<>();
                 for (String claimId : claimsArray) {
@@ -248,10 +255,6 @@ public class ClaimController implements ClaimProcessManager {
                 cards.add(new InsuranceCard(cardNumber, cardHolder, policyOwner, expirationDate));
             }
             this.listOfInsuranceCards = cards;
-//            for (InsuranceCard card : listOfInsuranceCards) {
-//                System.out.println(card.toString());
-//            }
-//            System.out.println("Insurance cards loaded from dataFile/insuranceCards.txt");
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
         }
@@ -287,8 +290,8 @@ public class ClaimController implements ClaimProcessManager {
 
             // Write claim records
             for (Claim claim : listOfClaims) {
-                String formattedClaimDate = DateUtils.formatDate(claim.getClaimDate()); // Use utility method to format date
-                String formattedExamDate = DateUtils.formatDate(claim.getExamDate()); // Use utility method to format date
+                String formattedClaimDate = formatDate(claim.getClaimDate()); // Use utility method to format date
+                String formattedExamDate = formatDate(claim.getExamDate()); // Use utility method to format date
                 // Joining documents with semicolon and wrapping with square brackets
                 String documents = String.join(";", claim.getDocuments()) ;
 
@@ -317,8 +320,8 @@ public class ClaimController implements ClaimProcessManager {
 
             // Write claim records
             for (Claim claim : listOfClaims) {
-                String formattedClaimDate = DateUtils.formatDate(claim.getClaimDate()); // Use utility method to format date
-                String formattedExamDate = DateUtils.formatDate(claim.getExamDate()); // Use utility method to format date
+                String formattedClaimDate = formatDate(claim.getClaimDate()); // Use utility method to format date
+                String formattedExamDate = formatDate(claim.getExamDate()); // Use utility method to format date
                 // Joining documents with semicolon and wrapping with square brackets
                 String documents = String.join(";", claim.getDocuments()) ;
 
@@ -407,7 +410,7 @@ public class ClaimController implements ClaimProcessManager {
                         insurancecard.getCardNumber(),
                         cardHolderId,
                         insurancecard.getPolicyOwner(),
-                        DateUtils.formatDate(insurancecard.getExpirationDate())
+                        formatDate(insurancecard.getExpirationDate())
                 ));
             }
         } catch (IOException e) {
@@ -427,11 +430,9 @@ public class ClaimController implements ClaimProcessManager {
         return listOfInsuranceCards;
     }
 
-    public class DateUtils {
-        public static String formatDate(Date date) {
-            SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy");
-            return formatter.format(date);
-        }
+    public String formatDate(Date date) {
+        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
+        return sdf.format(date);
     }
 
     public void sortClaimsByClaimDate(boolean ascending) {
@@ -468,24 +469,4 @@ public class ClaimController implements ClaimProcessManager {
         }
     }
 
-    public void sortInsuranceCardByDate(boolean ascending) {
-        if (ascending) {
-            listOfInsuranceCards.sort(Comparator.comparing(InsuranceCard::getExpirationDate));
-            currentCardOrder = "expiration date from earliest to latest";
-        } else {
-            // Sort claims in descending order by date (later dates at the top)
-            listOfInsuranceCards.sort(Comparator.comparing(InsuranceCard::getExpirationDate).reversed());
-            currentCardOrder = "expiration date from earliest to latest";
-        }
-    }
-
-    public void sortCustomerByNumberOfClaim(boolean ascending) {
-        if (ascending) {
-            listOfCustomers.sort(Comparator.comparingInt(customer -> ((Customer)customer).getClaims().size()));
-            currentCustomerOrder = "claim count from least to most";
-        } else {
-            listOfCustomers.sort(Comparator.comparingInt(customer -> ((Customer)customer).getClaims().size()).reversed());
-            currentCustomerOrder = "claim count from most to least";
-        }
-    }
 }

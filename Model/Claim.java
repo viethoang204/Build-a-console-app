@@ -1,7 +1,6 @@
 package Model;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -31,7 +30,6 @@ public class Claim {
         this.cardNumber = cardNumber;
         this.examDate = examDate;
         this.documents = documents;
-//        this.documents = new ArrayList<>();
         this.claimAmount = claimAmount;
         this.status = status;
         this.receiverBankingInfo = receiverBankingInfo;
@@ -97,12 +95,9 @@ public class Claim {
         return receiverBankingInfo;
     }
 
-    public void setReceiverBankingInfo(BankingInfo receiverBankingInfo) {
-        this.receiverBankingInfo = receiverBankingInfo;
-    }
 
     @Override
-public String toString() {
+    public String toString() {
     SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
     return "Claim{" +
             "id='" + id + '\'' +

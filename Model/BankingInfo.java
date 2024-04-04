@@ -16,16 +16,8 @@ public class BankingInfo {
         return infor_bank;
     }
 
-    public String getBank() {
-        return bank;
-    }
-
     public void setBank(String bank) {
         this.bank = bank;
-    }
-
-    public String getName() {
-        return name;
     }
 
     public void setName(String name) {

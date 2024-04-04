@@ -3,10 +3,12 @@ package Controller;
 import Model.*;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class CustomerController {
-    private ClaimController claimController;
+    public String currentCustomerOrder = "default";
+    private final ClaimController claimController;
     private static CustomerController instance;
 
     public static CustomerController getInstance() {
@@ -24,16 +26,8 @@ public class CustomerController {
         this.claimController = ClaimController.getInstance();
     }
 
-    public ArrayList<Claim> getListOfClaims() {
-        return claimController.getListOfClaims();
-    }
-
     public ArrayList<Customer> getListOfCustomers() {
         return claimController.getListOfCustomers();
-    }
-
-    public ArrayList<InsuranceCard> getListOfInsuranceCards() {
-        return claimController.getListOfInsuranceCards();
     }
 
     public List<Customer> getAll() {
@@ -175,5 +169,16 @@ public class CustomerController {
 
         return nextID;
     }
+
+    public void sortCustomerByNumberOfClaim(boolean ascending) {
+        if (ascending) {
+            claimController.getListOfCustomers().sort(Comparator.comparingInt(customer -> ((Customer)customer).getClaims().size()));
+            currentCustomerOrder = "claim count from least to most";
+        } else {
+            claimController.getListOfCustomers().sort(Comparator.comparingInt(customer -> ((Customer)customer).getClaims().size()).reversed());
+            currentCustomerOrder = "claim count from most to least";
+        }
+    }
+
 
 }

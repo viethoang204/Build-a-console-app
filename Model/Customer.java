@@ -1,7 +1,5 @@
 package Model;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class Customer {
@@ -39,10 +37,6 @@ public class Customer {
 
     public InsuranceCard getInsuranceCard() {
         return insuranceCard;
-    }
-
-    public void setInsuranceCard(InsuranceCard insuranceCard) {
-        this.insuranceCard = insuranceCard;
     }
 
     public List<Claim> getClaims() {

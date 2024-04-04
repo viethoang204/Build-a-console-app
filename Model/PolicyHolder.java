@@ -1,6 +1,5 @@
 package Model;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class PolicyHolder extends Customer {
@@ -9,10 +8,6 @@ public class PolicyHolder extends Customer {
     public PolicyHolder(String id, String fullName, InsuranceCard insuranceCard, List<Claim> claims, List<Dependent> listOfDependents) {
         super(id, fullName, insuranceCard, claims);
         this.dependents = listOfDependents;
-    }
-
-    public void setDependents(List<Dependent> dependents) {
-        this.dependents = dependents;
     }
 
     // Thêm Dependent vào danh sách
@@ -26,7 +21,7 @@ public class PolicyHolder extends Customer {
     }
 
     @Override
-public String toString() {
+    public String toString() {
     String listOfDependents = (this.dependents != null) ? this.dependents.toString() : "N/A";
     return "PolicyHolder{" +
             "id='" + super.getId() + '\'' +
