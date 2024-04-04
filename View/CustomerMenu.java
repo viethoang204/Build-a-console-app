@@ -1,3 +1,7 @@
+/**
+ * @author <Duong Viet Hoang - S3962514>
+ */
+
 package View;
 
 import Controller.ClaimController;
@@ -13,16 +17,16 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class CustomerMenu {
-    private Menu menu;
+    private MainMenu mainMenu;
     private static CustomerMenu instance;
 
-    private final CustomerController customerController = CustomerController.getInstance();
+    private CustomerController customerController = CustomerController.getInstance();
 
-    private final ClaimController claimController = ClaimController.getInstance();
+    private ClaimController claimController = ClaimController.getInstance();
 
-    private final InsuranceCardController insuranceCardController = InsuranceCardController.getInstance();
+    private InsuranceCardController insuranceCardController = InsuranceCardController.getInstance();
 
-    private final Scanner scanner = new Scanner(System.in);
+    private Scanner scanner = new Scanner(System.in);
 
     public static CustomerMenu getInstance() {
         if (instance == null) {
@@ -31,11 +35,12 @@ public class CustomerMenu {
         return instance;
     }
 
-    public void setMenu(Menu menu) {
-        this.menu = menu;
+    public void setMenu(MainMenu mainMenu) {
+        this.mainMenu = mainMenu;
     }
 
     public void customerMenu(){
+        System.out.print("\n");
         int choice = 0;
         do {
             System.out.println("\033[1m===== CUSTOMER MANAGER =====\033[0m");
@@ -58,6 +63,7 @@ public class CustomerMenu {
 
             switch (choice) {
                 case 1:
+                    System.out.print("\n");
                     do {
                         this.printCustomersInfo(customerController.getListOfCustomers(), false);
                         System.out.println("1. View Detail Of A Customer (Claims list + Dependents list)");
@@ -79,9 +85,15 @@ public class CustomerMenu {
                                 System.out.println("Returning...");
                         }
                     } while (choice != 3);
+                    System.out.print("\n");
                     break;
-                case 2: menu.addCustomerAndCard(); break;
+                case 2:
+                    System.out.print("\n");
+                    mainMenu.addCustomerAndCard();
+                    System.out.print("\n");
+                    break;
                 case 3:
+                    System.out.print("\n");
                     try {
                         this.printCustomersInfo(customerController.getAll(), true);
                         System.out.println("*** Notice: Deleting a customer also removes their insurance card ***");
@@ -118,8 +130,10 @@ public class CustomerMenu {
                     } catch (Exception e) {
                         System.out.println("An error occurred, please try again.");
                     }
+                    System.out.print("\n");
                     break;
                 case 4:
+                    System.out.print("\n");
                     try {
                         System.out.println("\033[1m===== CUSTOMER =====\033[0m");
                         this.printCustomersInfo(customerController.getAll(), true);
@@ -155,8 +169,10 @@ public class CustomerMenu {
                     } catch (Exception e) {
                         System.out.println("An error occurred. Please try again");
                     }
+                    System.out.print("\n");
                     break;
                 case 5:
+                    System.out.print("\n");
                     this.printCustomersInfo(customerController.getAll(), true);
                     do {
                         System.out.println("The customer table is currently sorted by the " + customerController.currentCustomerOrder + " order");
@@ -180,10 +196,11 @@ public class CustomerMenu {
                                 System.out.println("Returning...");
                         }
                     } while (choice != 3);
+                    System.out.print("\n");
                     break;
                 case 6:
                     System.out.println("Returning...");
-                    menu.view();
+                    mainMenu.view();
                     break;
             }
         } while (choice!=6);
@@ -290,7 +307,7 @@ public class CustomerMenu {
                 .map(Dependent::getFullName)
                 .collect(Collectors.joining(", ")) : "N/A"));
 
-        menu.printACardInfo(customer.getInsuranceCard(), customer.getFullName());
+        mainMenu.printACardInfo(customer.getInsuranceCard(), customer.getFullName());
 
         // Check if customer has claims and print details
         if (customer.getClaims().isEmpty()) {
@@ -306,6 +323,7 @@ public class CustomerMenu {
                 printADependentInfo(policyHolder.getDependents(), customer.getFullName());
             }
         }
+        System.out.print("\n");
     }
 
     private void printADependentInfo(List<Dependent> dependents, String customerName) {
@@ -681,7 +699,9 @@ public class CustomerMenu {
                 System.err.println("File not found: " + filePath);
             }
         } else {
-
+            try (PrintWriter out = new PrintWriter(System.out)) {
+                // Similar printing logic here for console output, if needed
+            }
         }
     }
 }

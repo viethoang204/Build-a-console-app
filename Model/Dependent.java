@@ -1,6 +1,9 @@
 package Model;
 
 import Controller.ClaimController;
+/**
+ * @author <Duong Viet Hoang - S3962514>
+ */
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,3 +1,7 @@
+/**
+ * @author <Duong Viet Hoang - S3962514>
+ */
+
 package Model;
 
 public class BankingInfo {

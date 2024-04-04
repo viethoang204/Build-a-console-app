@@ -1,3 +1,7 @@
+/**
+ * @author <Duong Viet Hoang - S3962514>
+ */
+
 package View;
 
 import Controller.ClaimController;
@@ -13,16 +17,16 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class InsuranceCardMenu {
-    private Menu menu;
+    private MainMenu mainMenu;
     private static InsuranceCardMenu instance;
 
-    private final InsuranceCardController insuranceCardController = InsuranceCardController.getInstance();
+    private InsuranceCardController insuranceCardController = InsuranceCardController.getInstance();
 
-    private final CustomerController customerController = CustomerController.getInstance();
+    private CustomerController customerController = CustomerController.getInstance();
 
-    private final ClaimController claimController = ClaimController.getInstance();
+    private ClaimController claimController = ClaimController.getInstance();
 
-    private final Scanner scanner = new Scanner(System.in);
+    private Scanner scanner = new Scanner(System.in);
 
     public static InsuranceCardMenu getInstance() {
         if (instance == null) {
@@ -31,11 +35,12 @@ public class InsuranceCardMenu {
         return instance;
     }
 
-    public void setMenu(Menu menu) {
-        this.menu = menu;
+    public void setMenu(MainMenu mainMenu) {
+        this.mainMenu = mainMenu;
     }
 
     public void cardMenu() {
+        System.out.print("\n");
         int choice = 0;
         do {
             System.out.println("\033[1m===== CARD MANAGER =====\033[0m");
@@ -58,7 +63,7 @@ public class InsuranceCardMenu {
 
             switch (choice) {
                 case 1:
-//                    this.printCardsInfo(insuranceCardController.getListOfInsuranceCards(), false);
+                    System.out.print("\n");
                     do {
                         this.printCardsInfo(insuranceCardController.getListOfInsuranceCards(), false);
                         System.out.println("1. View Detail Of A Insurance Card");
@@ -85,9 +90,15 @@ public class InsuranceCardMenu {
                                 break;
                         }
                     } while (choice != 3);
+                    System.out.print("\n");
                     break;
-                case 2: menu.addCustomerAndCard(); break;
+                case 2:
+                    System.out.print("\n");
+                    mainMenu.addCustomerAndCard();
+                    System.out.print("\n");
+                    break;
                 case 3:
+                    System.out.print("\n");
                     try {
                         this.printCardsInfo(insuranceCardController.getAll(), true);
                         System.out.println("*** Notice: Deleting a card also removes their owner information ***");
@@ -143,9 +154,11 @@ public class InsuranceCardMenu {
                     } catch (Exception e) {
                         System.out.println("An error occurred, please try again.");
                     }
+                    System.out.print("\n");
                     break;
 
                 case 4:
+                    System.out.print("\n");
                     try {
                         System.out.println("\033[1m===== EDIT INSURANCE CARD =====\033[0m");
                         this.printCardsInfo(insuranceCardController.getAll(), true);
@@ -223,8 +236,10 @@ public class InsuranceCardMenu {
                     } catch (Exception e) {
                         System.out.println("An error occurred. Please try again");
                     }
+                    System.out.print("\n");
                     break;
                 case 5:
+                    System.out.print("\n");
                     this.printCardsInfo(insuranceCardController.getAll(), true);
                     do {
                         System.out.println("The insurance card table is currently sorted by the " + insuranceCardController.currentCardOrder + " order");
@@ -248,10 +263,11 @@ public class InsuranceCardMenu {
                                 System.out.println("Returning...");
                         }
                     } while (choice != 3);
+                    System.out.print("\n");
                     break;
                 case 6:
                     System.out.println("Returning...");
-                    menu.view();
+                    mainMenu.view();
                     break;
             }
         } while (choice != 6);
@@ -345,7 +361,8 @@ public class InsuranceCardMenu {
         System.out.println("Expiration Date: " + new SimpleDateFormat("dd-MM-yyyy").format(card.getExpirationDate()));
 
         System.out.println("\033[1m===== CUSTOMER DETAIL OF " + cardHolder.getFullName().toUpperCase() + " =====\033[0m");
-        menu.printACustomerInfo(cardHolderList);
+        mainMenu.printACustomerInfo(cardHolderList);
+        System.out.print("\n");
     }
 
     public void printCardsInfo(List<InsuranceCard> cards, boolean isPreview) {

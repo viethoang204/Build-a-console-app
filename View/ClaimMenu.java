@@ -1,3 +1,7 @@
+/**
+ * @author <Duong Viet Hoang - S3962514>
+ */
+
 package View;
 
 import Controller.ClaimController;
@@ -15,12 +19,12 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class ClaimMenu {
-    private Menu menu;
+    private MainMenu mainMenu;
     private static ClaimMenu instance;
 
-    private final ClaimController claimController = ClaimController.getInstance();
+    private ClaimController claimController = ClaimController.getInstance();
 
-    private final Scanner scanner = new Scanner(System.in);
+    private Scanner scanner = new Scanner(System.in);
 
     public static ClaimMenu getInstance() {
         if (instance == null) {
@@ -29,11 +33,12 @@ public class ClaimMenu {
         return instance;
     }
 
-    public void setMenu(Menu menu) {
-        this.menu = menu;
+    public void setMenu(MainMenu mainMenu) {
+        this.mainMenu = mainMenu;
     }
 
     public void claimMenu(){
+        System.out.print("\n");
         int choice = 0;
         do {
             System.out.println("\033[1m===== CLAIM MANAGER MENU =====\033[0m");
@@ -56,8 +61,9 @@ public class ClaimMenu {
 
             switch (choice) {
                 case 1:
+                    System.out.print("\n");
                     do {
-                        menu.printClaimsInfo(claimController.getAll(), false);
+                        mainMenu.printClaimsInfo(claimController.getAll(), false);
                         System.out.println("1. View Detail Of A Claim");
                         System.out.println("2. Sorting");
                         System.out.println("3. Return");
@@ -77,17 +83,19 @@ public class ClaimMenu {
                                 System.out.println("Returning...");
                         }
                     } while (choice != 3);
+                    System.out.print("\n");
                     break;
                 case 2:
+                    System.out.print("\n");
                     try {
                         System.out.print("Is the customer for menu claim already in the system? (y/n): ");
                         String inSystem = scanner.nextLine().trim().toLowerCase();
                         if (!inSystem.equals("y")) {
                             System.out.println("You need to add the customer and his/her insurance card first.");
-                            menu.addCustomerAndCard();
+                            mainMenu.addCustomerAndCard();
                             break;
                         }
-                        menu.printClaimsInfo(claimController.getAll(), true);
+                        mainMenu.printClaimsInfo(claimController.getAll(), true);
                         System.out.println("\033[1m===== CREATE NEW CLAIM =====\033[0m");
                         SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy");
                         Date claimdate = null;
@@ -100,10 +108,10 @@ public class ClaimMenu {
                             }
                         }
 
-                        menu.printCustomersAndCardsInfo(claimController.getListOfCustomers(), claimController.getListOfInsuranceCards(), true);
+                        mainMenu.printCustomersAndCardsInfo(claimController.getListOfCustomers(), claimController.getListOfInsuranceCards(), true);
 
                         Customer insuredperson = null;
-                        String customerId = "";
+                        String customerId = ""; // Initialize customerId outside the loop
                         while (insuredperson == null) {
                             System.out.print("Enter insured person ID (c-xxxxxxx): ");
                             customerId = scanner.nextLine().trim();
@@ -171,10 +179,12 @@ public class ClaimMenu {
                     } catch (Exception e) {
                         System.out.println("An error occurred. Please try again");
                     }
+                    System.out.print("\n");
                     break;
                 case 3:
+                    System.out.print("\n");
                     try {
-                        menu.printClaimsInfo(claimController.getAll(), true);
+                        mainMenu.printClaimsInfo(claimController.getAll(), true);
                         System.out.print("Enter claim ID to remove (f-xxxxxxxxxx): ");
                         String id = scanner.nextLine();
                         Claim claim = claimController.getOne(id);
@@ -196,11 +206,13 @@ public class ClaimMenu {
                     } catch (Exception e){
                         System.out.println("An error occurred, please try again.");
                     }
+                    System.out.print("\n");
                     break;
                 case 4:
+                    System.out.print("\n");
                     try {
                         System.out.println("\033[1m===== EDIT CLAIM =====\033[0m");
-                        menu.printClaimsInfo(claimController.getAll(), true);
+                        mainMenu.printClaimsInfo(claimController.getAll(), true);
 
                         System.out.print("Enter claim ID to edit (f-xxxxxxxxxx): ");
                         String id = scanner.nextLine();
@@ -225,7 +237,7 @@ public class ClaimMenu {
                             }
                         }
 
-                        menu.printCustomersAndCardsInfo(claimController.getListOfCustomers(), claimController.getListOfInsuranceCards(), true);
+                        mainMenu.printCustomersAndCardsInfo(claimController.getListOfCustomers(), claimController.getListOfInsuranceCards(), true);
                         System.out.print("Enter insured person ID (c-xxxxxxx) or press Enter to skip: ");
                         String customerId = scanner.nextLine().trim();
                         if (!customerId.isEmpty()) {
@@ -374,9 +386,11 @@ public class ClaimMenu {
                     } catch (Exception e) {
                         System.out.println("An error occurred. Please try again");
                     }
+                    System.out.print("\n");
                     break;
                 case 5:
-                    menu.printClaimsInfo(claimController.getAll(), true);
+                    System.out.print("\n");
+                    mainMenu.printClaimsInfo(claimController.getAll(), true);
                     do {
                         System.out.println("The claim table is currently sorted by the " + claimController.currentClaimOrder + " order");
                         System.out.println("Would you like to change the order before saving the file?");
@@ -399,10 +413,11 @@ public class ClaimMenu {
                                 System.out.println("Returning...");
                         }
                     } while (choice != 3);
+                    System.out.print("\n");
                     break;
                 case 6:
                     System.out.println("Returning...");
-                    menu.view();
+                    mainMenu.view();
                     break;
             }
         } while (choice!=6);
@@ -705,7 +720,7 @@ public class ClaimMenu {
     }
 
     private void sortingClaim() {
-        menu.printClaimsInfo(claimController.getAll(), false);
+        mainMenu.printClaimsInfo(claimController.getAll(), false);
         int choice = 0;
         do {
             System.out.println("SORTING BY:");
@@ -728,27 +743,27 @@ public class ClaimMenu {
             switch (choice){
                 case 1:
                     claimController.sortClaimsByClaimDate(true);
-                    menu.printClaimsInfo(claimController.getAll(), false);
+                    mainMenu.printClaimsInfo(claimController.getAll(), false);
                     break;
                 case 2:
                     claimController.sortClaimsByClaimDate(false);
-                    menu.printClaimsInfo(claimController.getAll(), false);
+                    mainMenu.printClaimsInfo(claimController.getAll(), false);
                     break;
                 case 3:
                     claimController.sortClaimsByExamDate(true);
-                    menu.printClaimsInfo(claimController.getAll(), false);
+                    mainMenu.printClaimsInfo(claimController.getAll(), false);
                     break;
                 case 4:
                     claimController.sortClaimsByExamDate(false);
-                    menu.printClaimsInfo(claimController.getAll(), false);
+                    mainMenu.printClaimsInfo(claimController.getAll(), false);
                     break;
                 case 5:
                     claimController.sortClaimsByClaimAmount(true);
-                    menu.printClaimsInfo(claimController.getAll(), false);
+                    mainMenu.printClaimsInfo(claimController.getAll(), false);
                     break;
                 case 6:
                     claimController.sortClaimsByClaimAmount(false);
-                    menu.printClaimsInfo(claimController.getAll(), false);
+                    mainMenu.printClaimsInfo(claimController.getAll(), false);
                     break;
                 case 7:
                     System.out.println("Returning...");
@@ -790,15 +805,16 @@ public class ClaimMenu {
 
         if (insuredPerson != null) {
             System.out.println("\033[1m===== INSURED PERSON DETAIL OF " + insuredPerson.getFullName().toUpperCase() + " =====\033[0m");
-            menu.printACustomerInfo(insuredPersonList);
+            mainMenu.printACustomerInfo(insuredPersonList);
         } else {
             System.out.println("\033[1m===== INSURED PERSON DETAIL: No data =====\033[0m");
         }
 
         if (claim.getCardNumber() != null) {
-            menu.printACardInfo(claim.getCardNumber(), insuredPerson != null ? insuredPerson.getFullName() : "No data");
+            mainMenu.printACardInfo(claim.getCardNumber(), insuredPerson != null ? insuredPerson.getFullName() : "No data");
         } else {
             System.out.println("\033[1m===== CARD INFO: No data =====\033[0m");
         }
+        System.out.print("\n");
     }
 }

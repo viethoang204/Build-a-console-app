@@ -1,3 +1,7 @@
+/**
+ * @author <Duong Viet Hoang - S3962514>
+ */
+
 package View;
 
 import Controller.ClaimController;
@@ -12,16 +16,16 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class Menu {
-    private final ClaimMenu claimMenu;
-    private final InsuranceCardMenu insuranceCardMenu;
-    private final CustomerMenu customerMenu;
-    private final Scanner scanner = new Scanner(System.in);
-    private final ClaimController claimController = ClaimController.getInstance();
-    private final CustomerController customerController = CustomerController.getInstance();
-    private final InsuranceCardController insuranceCardController = InsuranceCardController.getInstance();
+public class MainMenu {
+    private ClaimMenu claimMenu;
+    private InsuranceCardMenu insuranceCardMenu;
+    private CustomerMenu customerMenu;
+    private Scanner scanner = new Scanner(System.in);
+    private ClaimController claimController = ClaimController.getInstance();
+    private CustomerController customerController = CustomerController.getInstance();
+    private InsuranceCardController insuranceCardController = InsuranceCardController.getInstance();
 
-    public Menu() {
+    public MainMenu() {
         claimMenu = ClaimMenu.getInstance();
         customerMenu = CustomerMenu.getInstance();
         insuranceCardMenu = InsuranceCardMenu.getInstance();
@@ -31,6 +35,7 @@ public class Menu {
     }
 
     public void view(){
+        System.out.print("\n");
         int choice = 0;
         do {
             System.out.println("\033[1m===== HOME PAGE =====\033[0m");

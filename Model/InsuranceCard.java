@@ -1,4 +1,7 @@
 package Model;
+/**
+ * @author <Duong Viet Hoang - S3962514>
+ */
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

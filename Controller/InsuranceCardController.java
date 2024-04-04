@@ -2,6 +2,9 @@ package Controller;
 
 import Model.Customer;
 import Model.InsuranceCard;
+/**
+ * @author <Duong Viet Hoang - S3962514>
+ */
 
 import java.util.ArrayList;
 import java.util.Comparator;
