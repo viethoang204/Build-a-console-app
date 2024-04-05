@@ -20,13 +20,13 @@ public class CustomerMenu {
     private MainMenu mainMenu;
     private static CustomerMenu instance;
 
-    private CustomerController customerController = CustomerController.getInstance();
+    private final CustomerController customerController = CustomerController.getInstance();
 
-    private ClaimController claimController = ClaimController.getInstance();
+    private final ClaimController claimController = ClaimController.getInstance();
 
-    private InsuranceCardController insuranceCardController = InsuranceCardController.getInstance();
+    private final InsuranceCardController insuranceCardController = InsuranceCardController.getInstance();
 
-    private Scanner scanner = new Scanner(System.in);
+    private final Scanner scanner = new Scanner(System.in);
 
     public static CustomerMenu getInstance() {
         if (instance == null) {
@@ -43,9 +43,9 @@ public class CustomerMenu {
         System.out.print("\n");
         int choice = 0;
         do {
-            System.out.println("\033[1m===== CUSTOMER MANAGER =====\033[0m");
+            System.out.println("\033[1m========================= CUSTOMER MANAGER =========================\033[0m");
             System.out.println("1. View All Customer");
-            System.out.println("2. Add Customer And His/Her Insurance Card");
+            System.out.println("2. Add Customer");
             System.out.println("3. Remove Customer");
             System.out.println("4. Edit Customer");
             System.out.println("5. Save as file");
@@ -65,6 +65,7 @@ public class CustomerMenu {
                 case 1:
                     System.out.print("\n");
                     do {
+
                         this.printCustomersInfo(customerController.getListOfCustomers(), false);
                         System.out.println("1. View Detail Of A Customer (Claims list + Dependents list)");
                         System.out.println("2. Sorting");
@@ -95,6 +96,7 @@ public class CustomerMenu {
                 case 3:
                     System.out.print("\n");
                     try {
+                        System.out.println("\033[1m========================== REMOVE CUSTOMER ==========================\033[0m");
                         this.printCustomersInfo(customerController.getAll(), true);
                         System.out.println("*** Notice: Deleting a customer also removes their insurance card ***");
                         System.out.println("*** Customer details will be erased from all related claims for management ***");
@@ -135,7 +137,7 @@ public class CustomerMenu {
                 case 4:
                     System.out.print("\n");
                     try {
-                        System.out.println("\033[1m===== CUSTOMER =====\033[0m");
+                        System.out.println("\033[1m=========================== EDIT CUSTOMER ===========================\033[0m");
                         this.printCustomersInfo(customerController.getAll(), true);
 
                         System.out.print("Enter customer ID to edit (c-xxxxxxx): ");
@@ -149,7 +151,11 @@ public class CustomerMenu {
                         System.out.print("Enter full name or press enter to skip: ");
                         String fullname = scanner.nextLine();
                         if (!fullname.isEmpty()){
-                            customer.setFullName(fullname);
+                            if (customer != null) {
+                                customer.setFullName(fullname);
+                            } else {
+                                System.out.println("Customer not found.");
+                            }
                             // Update full name in claim list
                             for (Claim claim : claimController.getListOfClaims()) {
                                 if (claim.getInsuredPerson() != null && claim.getInsuredPerson().getId().equals(id)) {
@@ -173,6 +179,7 @@ public class CustomerMenu {
                     break;
                 case 5:
                     System.out.print("\n");
+                    System.out.println("\033[1m========================= SAVING CUSTOMER ==========================\033[0m");
                     this.printCustomersInfo(customerController.getAll(), true);
                     do {
                         System.out.println("The customer table is currently sorted by the " + customerController.currentCustomerOrder + " order");
@@ -224,15 +231,15 @@ public class CustomerMenu {
             }
             switch (choice){
                 case 1:
-                    saveCustomerListAsTable(claimController.getListOfCustomers(), true);
+                    saveCustomerListAsTable(claimController.getListOfCustomers());
                     customerMenu();
                     break;
                 case 2:
-                    saveCustomerListAsTsv(claimController.getListOfCustomers(), true);
+                    saveCustomerListAsTsv(claimController.getListOfCustomers());
                     customerMenu();
                     break;
                 case 3:
-                    saveCustomerListAsCsv(claimController.getListOfCustomers(), true);
+                    saveCustomerListAsCsv(claimController.getListOfCustomers());
                     customerMenu();
                     break;
                 case 4:
@@ -256,6 +263,7 @@ public class CustomerMenu {
     }
 
     private void sortingCustomer() {
+        System.out.print("\n");
         this.printCustomersInfo(customerController.getAll(), false);
         int choice = 0;
         do {
@@ -295,7 +303,8 @@ public class CustomerMenu {
             System.out.println("Customer not found with the given ID.");
             return;
         }
-        System.out.println("\033[1m===== CUSTOMER DETAIL =====\033[0m");
+        System.out.print("\n");
+        System.out.println("——————————————————————————— CUSTOMER DETAIL ————————————————————————");
         System.out.println("ID: " + customer.getId());
         System.out.println("Full Name: " + customer.getFullName());
         System.out.println("Title: " + (customer instanceof PolicyHolder ? "Policy Holder" : "Dependent"));
@@ -318,11 +327,10 @@ public class CustomerMenu {
 
         // If customer is a PolicyHolder, print dependents information
         if (customer instanceof PolicyHolder) {
-            if (customer instanceof PolicyHolder) {
-                PolicyHolder policyHolder = (PolicyHolder) customer;
-                printADependentInfo(policyHolder.getDependents(), customer.getFullName());
-            }
+            PolicyHolder policyHolder = (PolicyHolder) customer;
+            printADependentInfo(policyHolder.getDependents(), customer.getFullName());
         }
+
         System.out.print("\n");
     }
 
@@ -359,7 +367,8 @@ public class CustomerMenu {
         headerFormat += "%n";
 
         // Print the table header for dependents
-        System.out.println("\033[1m===== DEPENDENT DETAIL OF " + customerName.toUpperCase() + " =====\033[0m");
+        System.out.print("\n");
+        System.out.println("—————————— DEPENDENT LIST OF " + customerName.toUpperCase() + " —————————");
         System.out.printf(headerFormat, (Object[]) headers);
 
         // Print each dependent's detail
@@ -424,7 +433,8 @@ public class CustomerMenu {
         headerFormat += "%n";
 
         // Print the table header
-        System.out.println("\033[1m===== CLAIM DETAIL OF " + customerName.toUpperCase() + " =====\033[0m");
+        System.out.print("\n");
+        System.out.println("———————————— CLAIM DETAIL OF " + customerName.toUpperCase() + " —————————");
         System.out.printf(headerFormat, (Object[]) headers);
 
         // Print each claim's detail
@@ -465,9 +475,6 @@ public class CustomerMenu {
             maxLengths[0] = Math.max(maxLengths[0], customer.getId().length());
             maxLengths[1] = Math.max(maxLengths[1], customer.getFullName().length());
             maxLengths[2] = Math.max(maxLengths[2], customer.getInsuranceCard().getCardNumber().length());
-            String claimsString = customer.getClaims().isEmpty() ? "no claim yet" : customer.getClaims().stream()
-                    .map(Claim::getId)
-                    .collect(Collectors.joining(", "));
             String title = customer instanceof PolicyHolder ? "Policy Holder" : "Dependent";
             maxLengths[3] = Math.max(maxLengths[3], title.length());
         }
@@ -481,9 +488,9 @@ public class CustomerMenu {
 
         // Print the table
         if (isPreview) {
-            System.out.println("\033[1m====== PREVIEW THE CUSTOMER LIST =====\033[0m");
+            System.out.println("———————————————————— PREVIEW THE CUSTOMER LIST —————————————————————");
         } else {
-            System.out.println("\033[1m====== CUSTOMER LIST =====\033[0m");
+            System.out.println("\033[1m========================== VIEW CUSTOMER ============================\033[0m");
         }
         // Print the headers
         System.out.printf(headerFormat, (Object[]) headers);
@@ -500,9 +507,15 @@ public class CustomerMenu {
                     title
             );
         }
+        if (isPreview) {
+
+            System.out.println("————————————————————————————————————————————————————————————————————");
+        } else {
+            System.out.println("\033[1m=====================================================================\033[0m");
+        }
     }
 
-    private void saveCustomerListAsCsv(List<Customer> customers, boolean saveFile) {
+    private void saveCustomerListAsCsv(List<Customer> customers) {
         DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.US);
         symbols.setDecimalSeparator('.'); // Ensure the decimal separator is dot and not comma
         DecimalFormat decimalFormat = new DecimalFormat("0.#", symbols);
@@ -513,7 +526,7 @@ public class CustomerMenu {
                 "ID", "Full Name", "Insurance Card", "Title"
         };
 
-        if (saveFile) {
+
             System.out.print("Enter file name to save as CSV: ");
             String fileName = scanner.nextLine();
             String filePath = "savedFile/" + fileName + ".csv"; // Adjust directory as needed
@@ -542,14 +555,9 @@ public class CustomerMenu {
             } catch (FileNotFoundException e) {
                 System.err.println("File not found: " + filePath);
             }
-        } else {
-            // If not saving to a file, consider how you want to handle console output.
-            // This block could be adapted for console output similarly to the file output logic, with proper data formatting.
-            System.out.println("Saving to console not implemented.");
-        }
     }
 
-    private void saveCustomerListAsTable(List<Customer> customers, boolean saveFile) {
+    private void saveCustomerListAsTable(List<Customer> customers) {
         DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.US);
         symbols.setDecimalSeparator('.'); // Ensure the decimal separator is dot and not comma
         DecimalFormat decimalFormat = new DecimalFormat("0.#", symbols);
@@ -607,7 +615,7 @@ public class CustomerMenu {
         String fullTitle = titlePaddingBefore + title + titlePaddingAfter;
 
         PrintWriter out = null;
-        if (saveFile) {
+
             // Prompt user for file name here
             System.out.print("Enter file name to save as TXT: ");
             String fileName = scanner.nextLine();
@@ -636,29 +644,10 @@ public class CustomerMenu {
                 System.err.println("File not found: " + filePath);
                 return; // Exit the method if file not found
             }
-        } else {
-            out = new PrintWriter(System.out);
-
-            out.println(fullTitle);
-            out.printf(borderFormat);
-            out.printf(headerFormat, (Object[]) headers);
-            out.printf(lineFormat);
-
-            for (Customer customer : customers) {
-                Object[] rowData = {
-                        customer.getId(),
-                        customer.getFullName(),
-                        customer.getInsuranceCard() != null ? customer.getInsuranceCard().getCardNumber() : "N/A",
-                        customer instanceof PolicyHolder ? "Policy Holder" : "Dependent"
-                };
-                out.printf(headerFormat, rowData);
-                out.printf(lineFormat);
-            }
-        }
         out.close();
     }
 
-    private void saveCustomerListAsTsv(List<Customer> customers, boolean saveFile) {
+    private void saveCustomerListAsTsv(List<Customer> customers) {
         DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.US);
         symbols.setDecimalSeparator('.'); // Ensure the decimal separator is dot and not comma
         DecimalFormat decimalFormat = new DecimalFormat("0.#", symbols);
@@ -669,7 +658,7 @@ public class CustomerMenu {
                 "ID", "Full Name", "Insurance Card", "Title" // Assuming "Insured Person" was a mistake and removed it
         };
 
-        if (saveFile) {
+
             System.out.print("Enter file name to save as TSV: ");
             String fileName = scanner.nextLine();
             String filePath = "savedFile/" + fileName + ".tsv"; // Adjust directory as needed
@@ -698,10 +687,5 @@ public class CustomerMenu {
             } catch (FileNotFoundException e) {
                 System.err.println("File not found: " + filePath);
             }
-        } else {
-            try (PrintWriter out = new PrintWriter(System.out)) {
-                // Similar printing logic here for console output, if needed
-            }
-        }
     }
 }

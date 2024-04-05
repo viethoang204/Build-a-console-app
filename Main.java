@@ -4,10 +4,9 @@
 
 import View.MainMenu;
 
-import java.awt.*;
-
 public class Main {
     public static void main(String[] args) {
+        System.out.print("\n");
         System.out.println("COSC2440 - Further Programming Assignment 1");
         System.out.println("Name: Duong Viet Hoang");
         System.out.println("Student ID: s3962514");

@@ -17,13 +17,13 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class MainMenu {
-    private ClaimMenu claimMenu;
-    private InsuranceCardMenu insuranceCardMenu;
-    private CustomerMenu customerMenu;
-    private Scanner scanner = new Scanner(System.in);
-    private ClaimController claimController = ClaimController.getInstance();
-    private CustomerController customerController = CustomerController.getInstance();
-    private InsuranceCardController insuranceCardController = InsuranceCardController.getInstance();
+    private final ClaimMenu claimMenu;
+    private final InsuranceCardMenu insuranceCardMenu;
+    private final CustomerMenu customerMenu;
+    private final Scanner scanner = new Scanner(System.in);
+    private final ClaimController claimController = ClaimController.getInstance();
+    private final CustomerController customerController = CustomerController.getInstance();
+    private final InsuranceCardController insuranceCardController = InsuranceCardController.getInstance();
 
     public MainMenu() {
         claimMenu = ClaimMenu.getInstance();
@@ -38,7 +38,7 @@ public class MainMenu {
         System.out.print("\n");
         int choice = 0;
         do {
-            System.out.println("\033[1m===== HOME PAGE =====\033[0m");
+            System.out.println("\033[1m============================ HOME MENU =============================\033[0m");
             System.out.println("1. Claim Manager");
             System.out.println("2. Customer Manager");
             System.out.println("3. Insurance Card Manager");
@@ -75,24 +75,40 @@ public class MainMenu {
 
     public void addCustomerAndCard() {
         try {
+            System.out.println("\033[1m=================== ADD CUSTOMER AND INSURANCE CARD =================\033[0m");
             this.printCustomersAndCardsInfo(claimController.getListOfCustomers(), claimController.getListOfInsuranceCards(), true);
-            System.out.println("===== FILL IN THE INFORMATION OF THE CUSTOMER'S CARD =====");
+            System.out.print("\n");
+            System.out.println("—————————— FILL IN THE INFORMATION OF THE CUSTOMER'S CARD ———————————");
+
+            List<Customer> customers = customerController.getAll();
+
+            String customerType = "";
+
+            if (customers.isEmpty()) {
+                System.out.println("No customers in the system. You need to add a Policy Holder first.");
+                customerType = "P";
+            } else {
+                System.out.println("*** Noted: If you are creating a dependent, please ensure that his/her policy holder is already in the system. ***");
+                System.out.println("*** If the policy holder is not in the system, please add the policy holder first ***");
+                while (!customerType.equals("D") && !customerType.equals("P")) {
+                    System.out.print("Is the customer a Dependent or a Policy Holder? (Enter d for Dependent, p for Policy Holder): ");
+                    customerType = scanner.nextLine().trim().toUpperCase();
+                    if (!customerType.equals("D") && !customerType.equals("P")) {
+                        System.out.println("Invalid input. Please enter d for Dependent or p for Policy Holder.");
+                    }
+                }
+            }
+
             String fullname = "";
             while (fullname.isEmpty()) {
                 System.out.print("Enter full name: ");
                 fullname = scanner.nextLine();
             }
 
-            System.out.println("Is the customer a Dependent or a Policy Holder?");
-            System.out.println("*** Noted: If you are creating a dependent, please ensure that the policy holder is already in the system.");
-            System.out.println("If the policy holder is not in the system, please add the policy holder first ***");
-            System.out.print("Enter your choice (Enter D for Dependent, P for Policy Holder): ");
-
-            String customerType = scanner.nextLine().toUpperCase();
-
             if (customerType.equals("P")) {
-
-                System.out.println("===== FILL IN THE INFORMATION OF THE CARD =====");
+                System.out.print("\n");
+                System.out.println("——————————————— FILL IN THE INFORMATION OF THE CARD —————————————————");
+                System.out.println("—————————— FILL IN THE INFORMATION OF THE CUSTOMER'S CARD ———————————");
                 String cardnumber = null;
                 System.out.println("Choose an option:");
                 System.out.println("1. Manually input card number");
@@ -103,7 +119,7 @@ public class MainMenu {
 
                 switch (choice) {
                     case 1:
-                        while (cardnumber == null || cardnumber.isEmpty() || cardnumber.length() < 10 || cardExists(cardnumber)) {
+                        while (cardnumber == null || cardnumber.isEmpty()|| cardExists(cardnumber)) {
                             System.out.print("Enter card number (10 digits): ");
                             cardnumber = scanner.nextLine();
                             if (cardnumber.isEmpty()) {
@@ -169,19 +185,18 @@ public class MainMenu {
                     System.out.println("Policy holder not found with the given ID.");
                     return;
                 }
-
-                System.out.println("===== FILL IN THE INFORMATION OF THE CARD =====");
+                System.out.println("\033[1m====== FILL IN THE INFORMATION OF THE CARD =====\033[0m");
                 String cardnumber = null;
                 System.out.println("Choose an option:");
                 System.out.println("1. Manually input card number");
-                System.out.println("2. Generate card number randomly");
+                System.out.println("2. Randomly generate card number");
                 System.out.print("Enter your choice: ");
                 int choice = scanner.nextInt();
                 scanner.nextLine(); // consume newline
 
                 switch (choice) {
                     case 1:
-                        while (cardnumber == null || cardnumber.isEmpty() || cardnumber.length() < 10 || cardExists(cardnumber)) {
+                        while (cardnumber == null || cardnumber.isEmpty() || cardExists(cardnumber)) {
                             System.out.print("Enter card number (10 digits): ");
                             cardnumber = scanner.nextLine();
                             if (cardnumber.isEmpty()) {
@@ -233,11 +248,9 @@ public class MainMenu {
                 claimController.writeInsuranceCardoFile();
 
                 System.out.println("Customer " + fullname + " and insurance card " + cardnumber + " added successfully.");
-            } else {
-                System.out.println("Invalid input. Please enter D for Dependent or P for Policy Holder.");
             }
         } catch (Exception e) {
-            e.printStackTrace();
+//            e.printStackTrace();
             System.out.println("An error occurred. Please try again.");
         }
 
@@ -270,8 +283,8 @@ public class MainMenu {
         }
         headerFormat += "%n";
 
-        // Print the table header
-        System.out.println("\033[1m===== INSURANCE CARD DETAIL OF " + customerName.toUpperCase() + " =====\033[0m");
+        System.out.print("\n");
+        System.out.println("—————— INSURANCE CARD DETAIL OF " + customerName.toUpperCase() + " ——————");
         System.out.printf(headerFormat, (Object[]) headers);
 
         // Print the data row for the single card
@@ -324,10 +337,11 @@ public class MainMenu {
 
         // Print the table
         if (isPreview) {
-            System.out.println("\033[1m====== PREVIEW THE CLAIM LIST =====\033[0m");
+            System.out.println("—————————————————————— PREVIEW THE CLAIM LIST ———————————————————————");
         } else {
-            System.out.println("\033[1m====== CLAIM LIST =====\033[0m");
+            System.out.println("\033[1m============================ VIEW CLAIM ==============================\033[0m");
         }
+
         // Print the headers
         System.out.printf(headerFormat, (Object[]) headers);
 
@@ -348,6 +362,11 @@ public class MainMenu {
                     formattedAmount,
                     claim.getStatus(),
                     claim.getReceiverBankingInfo().printInfor());
+        }
+        if (isPreview) {
+            System.out.println("—————————————————————————————————————————————————————————————————————");
+        } else {
+            System.out.println("\033[1m======================================================================\033[0m");
         }
     }
 
@@ -373,9 +392,6 @@ public class MainMenu {
         for (Customer customer : customers) {
             maxLengths[0] = Math.max(maxLengths[0], customer.getId().length());
             maxLengths[1] = Math.max(maxLengths[1], customer.getFullName().length());
-            String claimsString = customer.getClaims().isEmpty() ? "no claim yet" : customer.getClaims().stream()
-                    .map(Claim::getId)
-                    .collect(Collectors.joining(", "));
             maxLengths[2] = Math.max(maxLengths[2], (customer instanceof PolicyHolder ? "Policy Holder" : "Dependent").length());
         }
 
@@ -391,9 +407,6 @@ public class MainMenu {
 
         // Print the data rows
         for (Customer customer : customers) {
-            String claimIds = customer.getClaims().isEmpty() ? "no claim yet" : String.join(", ", customer.getClaims().stream()
-                    .map(Claim::getId)
-                    .collect(Collectors.toList()));
             String title = customer instanceof PolicyHolder ? "Policy Holder" : "Dependent";
             List<Object> dataRow = new ArrayList<>(Arrays.asList(
                     customer.getId(),
@@ -440,7 +453,7 @@ public class MainMenu {
 
         // Print the table
         if (isPreview) {
-            System.out.println("\033[1m====== PREVIEW THE POLICY HOLDER LIST =====\033[0m");
+            System.out.println("————————————————————— PREVIEW POLICY HOLDER LIST —————————————————————");
         } else {
             System.out.println("\033[1m====== POLICY HOLDER LIST =====\033[0m");
         }
@@ -458,6 +471,11 @@ public class MainMenu {
                         title
                 );
             }
+        }
+        if (isPreview) {
+            System.out.println("——————————————————————————————————————————————————————————————————————");
+        } else {
+            System.out.println("\033[1m===============================\033[0m");
         }
     }
 
@@ -498,7 +516,7 @@ public class MainMenu {
 
         // Print table header
         if (isPreview) {
-            System.out.println("\033[1m====== PREVIEW CUSTOMER AND INSURANCE CARD INFO =====\033[0m");
+            System.out.println("—————————————— PREVIEW CUSTOMER AND INSURANCE CARD INFO —————————————");
         } else {
             System.out.println("\033[1m====== CUSTOMER AND INSURANCE CARD INFO =====\033[0m");
         }
@@ -518,6 +536,11 @@ public class MainMenu {
                     (customer instanceof PolicyHolder) ? "Policy Holder" : "Dependent",
                     card.getPolicyOwner(),
                     dateFormat.format(card.getExpirationDate()));
+        }
+        if (isPreview) {
+            System.out.println("—————————————————————————————————————————————————————————————————————");
+        } else {
+            System.out.println("\033[1m=============================================\033[0m");
         }
     }
 }

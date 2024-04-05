@@ -14,62 +14,10 @@ import java.util.stream.Collectors;
 
 public class ClaimController implements ClaimProcessManager {
     public String currentClaimOrder = "default";
-
     private static ClaimController instance;
     private ArrayList<Claim> listOfClaims;
     private ArrayList<Customer> listOfCustomers;
     private ArrayList<InsuranceCard> listOfInsuranceCards;
-
-    private ClaimController() {
-        this.listOfClaims = new ArrayList<>();
-        this.listOfCustomers = new ArrayList<>();
-        this.listOfInsuranceCards = new ArrayList<>();
-        loadInsuranceCardsFromFile();
-        loadCustomsFromFile();
-        loadClaimsFromFile();
-    }
-
-    public static ClaimController getInstance(){
-        if (instance == null) {
-            instance = new ClaimController();
-        }
-        return instance;
-    }
-
-    public InsuranceCard getInsuranceCardById(String cardNumber) {
-        for (InsuranceCard card : listOfInsuranceCards) {
-            if (card.getCardNumber().equals(cardNumber)) {
-                return card;
-            }
-        }
-        return null;
-    }
-    public String getInsuranceCardNumberById(String id) {
-        for (InsuranceCard card : listOfInsuranceCards) {
-            if (card.getCardHolder().getId().equals(id.trim())) {
-                return card.getCardNumber();
-            }
-        }
-        return null;
-    }
-
-    public Dependent getCustomerDById(String id) {
-        for (Customer customer : listOfCustomers) {
-            if (customer instanceof Dependent && customer.getId().equals(id.trim())) {
-                return (Dependent) customer;
-            }
-        }
-        return null;
-    }
-
-    public Customer getCustomerById(String id) {
-        for (Customer customer : listOfCustomers) {
-            if (customer.getId().equals(id.trim())) {
-                return customer;
-            }
-        }
-        return null;
-    }
 
     @Override
     public Claim getOne(String claimId) {
@@ -128,6 +76,58 @@ public class ClaimController implements ClaimProcessManager {
             return true;
         }
         return false;
+    }
+
+    private ClaimController() {
+        this.listOfClaims = new ArrayList<>();
+        this.listOfCustomers = new ArrayList<>();
+        this.listOfInsuranceCards = new ArrayList<>();
+        loadInsuranceCardsFromFile();
+        loadCustomsFromFile();
+        loadClaimsFromFile();
+    }
+
+    public static ClaimController getInstance(){
+        if (instance == null) {
+            instance = new ClaimController();
+        }
+        return instance;
+    }
+
+    public InsuranceCard getInsuranceCardById(String cardNumber) {
+        for (InsuranceCard card : listOfInsuranceCards) {
+            if (card.getCardNumber().equals(cardNumber)) {
+                return card;
+            }
+        }
+        return null;
+    }
+
+    public String getInsuranceCardNumberById(String id) {
+        for (InsuranceCard card : listOfInsuranceCards) {
+            if (card.getCardHolder().getId().equals(id.trim())) {
+                return card.getCardNumber();
+            }
+        }
+        return null;
+    }
+
+    public Dependent getCustomerDById(String id) {
+        for (Customer customer : listOfCustomers) {
+            if (customer instanceof Dependent && customer.getId().equals(id.trim())) {
+                return (Dependent) customer;
+            }
+        }
+        return null;
+    }
+
+    public Customer getCustomerById(String id) {
+        for (Customer customer : listOfCustomers) {
+            if (customer.getId().equals(id.trim())) {
+                return customer;
+            }
+        }
+        return null;
     }
 
     public void loadCustomsFromFile() {
@@ -299,11 +299,15 @@ public class ClaimController implements ClaimProcessManager {
                 // Joining documents with semicolon and wrapping with square brackets
                 String documents = String.join(";", claim.getDocuments()) ;
 
+                // Check if insured person and card number are null
+                String insuredPersonId = claim.getInsuredPerson() != null ? claim.getInsuredPerson().getId() : "no data";
+                String cardNumber = claim.getCardNumber() != null ? claim.getCardNumber().getCardNumber() : "no data";
+
                 writer.println(String.format("%s,%s,%s,%s,%s,[%s],%s,%s,%s",
                         claim.getId(),
                         formattedClaimDate, // Use formatted claim date
-                        claim.getInsuredPerson().getId(), // Correcting assumption comment for clarity
-                        claim.getCardNumber().getCardNumber(), // Assuming getCardNumber returns an InsuranceCard object with getCardNumber()
+                        insuredPersonId,
+                        cardNumber,
                         formattedExamDate, // Use formatted exam date
                         documents, // Documents string already includes square brackets
                         claim.getClaimAmount(),
@@ -313,7 +317,7 @@ public class ClaimController implements ClaimProcessManager {
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
     }
 
@@ -347,7 +351,7 @@ public class ClaimController implements ClaimProcessManager {
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
     }
 
@@ -398,7 +402,7 @@ public class ClaimController implements ClaimProcessManager {
                 writer.println(outputLine);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
     }
 
@@ -418,7 +422,7 @@ public class ClaimController implements ClaimProcessManager {
                 ));
             }
         } catch (IOException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
     }
 

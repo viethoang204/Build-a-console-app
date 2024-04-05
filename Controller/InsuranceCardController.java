@@ -1,11 +1,11 @@
-package Controller;
-
-import Model.Customer;
-import Model.InsuranceCard;
 /**
  * @author <Duong Viet Hoang - S3962514>
  */
 
+package Controller;
+
+import Model.Customer;
+import Model.InsuranceCard;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
@@ -13,7 +13,7 @@ import java.util.List;
 
 public class InsuranceCardController {
     public String currentCardOrder = "default";
-    private ClaimController claimController;
+    private final ClaimController claimController;
     private static InsuranceCardController instance;
 
     public static InsuranceCardController getInstance(){

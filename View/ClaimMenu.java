@@ -22,9 +22,9 @@ public class ClaimMenu {
     private MainMenu mainMenu;
     private static ClaimMenu instance;
 
-    private ClaimController claimController = ClaimController.getInstance();
+    private final ClaimController claimController = ClaimController.getInstance();
 
-    private Scanner scanner = new Scanner(System.in);
+    private final Scanner scanner = new Scanner(System.in);
 
     public static ClaimMenu getInstance() {
         if (instance == null) {
@@ -41,7 +41,7 @@ public class ClaimMenu {
         System.out.print("\n");
         int choice = 0;
         do {
-            System.out.println("\033[1m===== CLAIM MANAGER MENU =====\033[0m");
+            System.out.println("\033[1m======================== CLAIM MANAGER MENU ========================\033[0m");
             System.out.println("1. View All Claim");
             System.out.println("2. Add Claim");
             System.out.println("3. Remove Claim");
@@ -88,15 +88,31 @@ public class ClaimMenu {
                 case 2:
                     System.out.print("\n");
                     try {
-                        System.out.print("Is the customer for menu claim already in the system? (y/n): ");
-                        String inSystem = scanner.nextLine().trim().toLowerCase();
-                        if (!inSystem.equals("y")) {
-                            System.out.println("You need to add the customer and his/her insurance card first.");
+                        System.out.println("\033[1m============================= ADD CLAIM ===============================\033[0m");
+                        List<Customer> customers = claimController.getListOfCustomers();
+
+                        if (customers.isEmpty()) {
+                            System.out.println("No customers in the system. You need to add a customer and his/her insurance card first.");
                             mainMenu.addCustomerAndCard();
-                            break;
+                        } else {
+                            String inSystem = "";
+                            while (!inSystem.equals("y") && !inSystem.equals("n")) {
+                                System.out.print("Is the customer for the claim already in the system? (y/n): ");
+                                inSystem = scanner.nextLine().trim().toLowerCase();
+                                if (!inSystem.equals("y") && !inSystem.equals("n")) {
+                                    System.out.println("Invalid input. Please enter 'y' or 'n'.");
+                                }
+                            }
+
+                            if (inSystem.equals("n")) {
+                                System.out.println("You need to add the customer and his/her insurance card first.");
+                                mainMenu.addCustomerAndCard();
+                                // break; // Use this if you're inside a loop
+                            }
                         }
                         mainMenu.printClaimsInfo(claimController.getAll(), true);
-                        System.out.println("\033[1m===== CREATE NEW CLAIM =====\033[0m");
+                        System.out.print("\n");
+//                        System.out.println("\033[1m===== CREATE NEW CLAIM =====\033[0m");
                         SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy");
                         Date claimdate = null;
                         while (claimdate == null) {
@@ -111,7 +127,7 @@ public class ClaimMenu {
                         mainMenu.printCustomersAndCardsInfo(claimController.getListOfCustomers(), claimController.getListOfInsuranceCards(), true);
 
                         Customer insuredperson = null;
-                        String customerId = ""; // Initialize customerId outside the loop
+                        String customerId; // Initialize customerId outside the loop
                         while (insuredperson == null) {
                             System.out.print("Enter insured person ID (c-xxxxxxx): ");
                             customerId = scanner.nextLine().trim();
@@ -184,6 +200,7 @@ public class ClaimMenu {
                 case 3:
                     System.out.print("\n");
                     try {
+                        System.out.println("\033[1m=========================== REMOVE CLAIM ============================\033[0m");
                         mainMenu.printClaimsInfo(claimController.getAll(), true);
                         System.out.print("Enter claim ID to remove (f-xxxxxxxxxx): ");
                         String id = scanner.nextLine();
@@ -191,12 +208,14 @@ public class ClaimMenu {
                         if (claim != null && claimController.delete(id)) {
                             System.out.println("Removed claim " + id + " from the system");
                             Customer insuredperson = claim.getInsuredPerson();
-                            List<Claim> customerClaims = insuredperson.getClaims();
-                            for (int i = 0; i < customerClaims.size(); i++) {
-                                if (customerClaims.get(i).getId().equals(claim.getId())) {
-                                    customerClaims.remove(i);
-                                    System.out.println("Claim removed from insured person's list.");
-                                    break;
+                            if (insuredperson != null) {
+                                List<Claim> customerClaims = insuredperson.getClaims();
+                                for (int i = 0; i < customerClaims.size(); i++) {
+                                    if (customerClaims.get(i).getId().equals(claim.getId())) {
+                                        customerClaims.remove(i);
+                                        System.out.println("Claim removed from insured person's list.");
+                                        break;
+                                    }
                                 }
                             }
                             claimController.writeCustomersToFile();
@@ -205,13 +224,14 @@ public class ClaimMenu {
                         }
                     } catch (Exception e){
                         System.out.println("An error occurred, please try again.");
+//                        e.printStackTrace();
                     }
                     System.out.print("\n");
                     break;
                 case 4:
                     System.out.print("\n");
                     try {
-                        System.out.println("\033[1m===== EDIT CLAIM =====\033[0m");
+                        System.out.println("\033[1m=========================== EDIT CLAIM =============================\033[0m");
                         mainMenu.printClaimsInfo(claimController.getAll(), true);
 
                         System.out.print("Enter claim ID to edit (f-xxxxxxxxxx): ");
@@ -282,6 +302,7 @@ public class ClaimMenu {
 
                         boolean editingDocuments = true;
                         while (editingDocuments) {
+                            System.out.print("\n");
                             System.out.println("\033[1m===== EDIT DOCUMENTS =====\033[0m");
                             System.out.println("Choose an option:");
                             System.out.println("1. Add a document");
@@ -351,7 +372,7 @@ public class ClaimMenu {
                         String amountInput = scanner.nextLine();
                         if (!amountInput.isEmpty()) {
                             try {
-                                Double amount = Double.parseDouble(amountInput);
+                                double amount = Double.parseDouble(amountInput);
                                 claim.setClaimAmount(amount);
                             } catch (NumberFormatException e) {
                                 System.out.println("Invalid number format. Please try again.");
@@ -369,6 +390,7 @@ public class ClaimMenu {
                             }
                         }
 
+                        System.out.print("\n");
                         System.out.print("===== EDIT BANKING INFORMATION OF " + claim.getInsuredPerson().getFullName().toUpperCase() +" =====" + "\n");
                         System.out.print("Enter the bank name: ");
                         String bank = scanner.nextLine().toUpperCase();
@@ -390,6 +412,7 @@ public class ClaimMenu {
                     break;
                 case 5:
                     System.out.print("\n");
+                    System.out.println("\033[1m=========================== SAVING CLAIM ============================\033[0m");
                     mainMenu.printClaimsInfo(claimController.getAll(), true);
                     do {
                         System.out.println("The claim table is currently sorted by the " + claimController.currentClaimOrder + " order");
@@ -423,7 +446,7 @@ public class ClaimMenu {
         } while (choice!=6);
     }
 
-    private void saveClaimListAsTable(List<Claim> claims, boolean saveFile) {
+    private void saveClaimListAsTable(List<Claim> claims) {
         DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.US);
         symbols.setDecimalSeparator('.'); // Ensure the decimal separator is dot and not comma
         DecimalFormat decimalFormat = new DecimalFormat("0.#", symbols);
@@ -488,9 +511,9 @@ public class ClaimMenu {
         // Combine parts to create the full title
         String fullTitle = titlePaddingBefore + title + titlePaddingAfter;
 
-        PrintWriter out = null;
-        String filePath = null; // Declare filePath here
-        if (saveFile) {
+        PrintWriter out;
+        String filePath; // Declare filePath here
+
             // Prompt user for file name here
             System.out.print("Enter file name to save as TXT: ");
             String fileName = scanner.nextLine();
@@ -502,9 +525,7 @@ public class ClaimMenu {
                 System.err.println("File not found: " + filePath);
                 return; // Exit the method if file not found
             }
-        } else {
-            out = new PrintWriter(System.out);
-        }
+
         out.println(fullTitle);
         out.printf(borderFormat);
         out.printf(headerFormat, (Object[]) headers);
@@ -525,13 +546,13 @@ public class ClaimMenu {
             out.printf(headerFormat, rowData);
             out.printf(lineFormat);
         }
-        if (saveFile) {
+
             System.out.println("File saved successfully at " + filePath);
-        }
+
         out.close();
     }
 
-    private void saveClaimListAsTsv(List<Claim> claims, boolean saveFile) {
+    private void saveClaimListAsTsv(List<Claim> claims) {
         DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.US);
         symbols.setDecimalSeparator('.'); // Ensure the decimal separator is dot and not comma
         DecimalFormat decimalFormat = new DecimalFormat("0.#", symbols);
@@ -543,8 +564,8 @@ public class ClaimMenu {
                 "List of Documents", "Claim Amount", "Status", "Receiver Banking Info"
         };
 
-        PrintWriter out = null;
-        if (saveFile) {
+        PrintWriter out;
+
             // Prompt user for file name here
             System.out.print("Enter file name to save as TSV: ");
             String fileName = scanner.nextLine();
@@ -575,33 +596,10 @@ public class ClaimMenu {
             } catch (FileNotFoundException e) {
                 System.err.println("File not found: " + filePath);
                 return; // Exit the method if file not found
-            }
-        } else {
-            out = new PrintWriter(System.out);
-
-            // Print the headers
-            out.print(String.join(delimiter, headers) + lineEnd);
-
-            // Print each data row
-            for (Claim claim : claims) {
-                String[] rowData = {
-                        claim.getId(),
-                        claimController.formatDate(claim.getClaimDate()),
-                        claim.getInsuredPerson() != null ? claim.getInsuredPerson().getFullName() : "no data",
-                        claim.getCardNumber() != null ? claim.getCardNumber().getCardNumber() : "no data",
-                        claimController.formatDate(claim.getExamDate()),
-                        String.join(";", claim.getDocuments()),
-                        decimalFormat.format(claim.getClaimAmount()),
-                        claim.getStatus(),
-                        claim.getReceiverBankingInfo().printInfor()
-                };
-                out.print(String.join(delimiter, rowData) + lineEnd);
-            }
-        }
-        out.close();
+            } out.close();
     }
 
-    private void saveClaimListAsCsv(List<Claim> claims, boolean saveFile) {
+    private void saveClaimListAsCsv(List<Claim> claims) {
         DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.US);
         symbols.setDecimalSeparator('.'); // Ensure the decimal separator is dot and not comma
         DecimalFormat decimalFormat = new DecimalFormat("0.#", symbols);
@@ -613,8 +611,8 @@ public class ClaimMenu {
                 "List of Documents", "Claim Amount", "Status", "Receiver Banking Info"
         };
 
-        PrintWriter out = null;
-        if (saveFile) {
+        PrintWriter out;
+
             // Prompt user for file name here
             System.out.print("Enter file name to save as CSV: ");
             String fileName = scanner.nextLine();
@@ -651,34 +649,6 @@ public class ClaimMenu {
             } catch (FileNotFoundException e) {
                 System.err.println("File not found: " + filePath);
                 return; // Exit the method if file not found
-            }
-        } else {
-            out = new PrintWriter(System.out);
-
-            // Print the headers
-            out.print(String.join(delimiter, headers) + lineEnd);
-
-            // Print each data row
-            for (Claim claim : claims) {
-                String[] rowData = {
-                        claim.getId(),
-                        claimController.formatDate(claim.getClaimDate()),
-                        claim.getInsuredPerson() != null ? claim.getInsuredPerson().getFullName() : "no data",
-                        claim.getCardNumber() != null ? claim.getCardNumber().getCardNumber() : "no data",
-                        claimController.formatDate(claim.getExamDate()),
-                        String.join(";", claim.getDocuments()),
-                        decimalFormat.format(claim.getClaimAmount()),
-                        claim.getStatus(),
-                        claim.getReceiverBankingInfo().printInfor()
-                };
-
-                // Handle potential commas in the data
-                for (int i = 0; i < rowData.length; i++) {
-                    rowData[i] = "\"" + rowData[i] + "\"";
-                }
-
-                out.print(String.join(delimiter, rowData) + lineEnd);
-            }
         }
         out.close();
     }
@@ -701,15 +671,15 @@ public class ClaimMenu {
             }
             switch (choice){
                 case 1:
-                    saveClaimListAsTable(claimController.getListOfClaims(), true);
+                    saveClaimListAsTable(claimController.getListOfClaims());
                     claimMenu();
                     break;
                 case 2:
-                    saveClaimListAsTsv(claimController.getListOfClaims(), true);
+                    saveClaimListAsTsv(claimController.getListOfClaims());
                     claimMenu();
                     break;
                 case 3:
-                    saveClaimListAsCsv(claimController.getListOfClaims(), true);
+                    saveClaimListAsCsv(claimController.getListOfClaims());
                     claimMenu();
                     break;
                 case 4:
@@ -720,6 +690,7 @@ public class ClaimMenu {
     }
 
     private void sortingClaim() {
+        System.out.print("\n");
         mainMenu.printClaimsInfo(claimController.getAll(), false);
         int choice = 0;
         do {
@@ -783,7 +754,8 @@ public class ClaimMenu {
         List<Customer> insuredPersonList = Collections.singletonList(insuredPerson);
 
         // Following menu, print the details of the claim
-        System.out.println("\033[1m===== CLAIM DETAIL =====\033[0m");
+        System.out.print("\n");
+        System.out.println("———————————————————————————— CLAIM DETAIL ———————————————————————————");
         System.out.println("ID: " + claim.getId());
         System.out.println("Claim Date: " + new SimpleDateFormat("dd-MM-yyyy").format(claim.getClaimDate()));
         if (claim.getInsuredPerson() != null) {
@@ -804,10 +776,12 @@ public class ClaimMenu {
         System.out.println("Receiver Banking Info: " + claim.getReceiverBankingInfo().printInfor());
 
         if (insuredPerson != null) {
-            System.out.println("\033[1m===== INSURED PERSON DETAIL OF " + insuredPerson.getFullName().toUpperCase() + " =====\033[0m");
+            System.out.print("\n");
+            System.out.println("—————— INSURED PERSON DETAIL OF " + insuredPerson.getFullName().toUpperCase() + " ——————");
             mainMenu.printACustomerInfo(insuredPersonList);
         } else {
-            System.out.println("\033[1m===== INSURED PERSON DETAIL: No data =====\033[0m");
+            System.out.print("\n");
+            System.out.println("————————————————————————————— INSURED PERSON DETAIL: No data ————————————————————————————");
         }
 
         if (claim.getCardNumber() != null) {
