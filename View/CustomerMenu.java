@@ -320,7 +320,7 @@ public class CustomerMenu {
 
         // Check if customer has claims and print details
         if (customer.getClaims().isEmpty()) {
-            System.out.println("\033[1m===== " +  customer.getFullName().toUpperCase() +" HAVE NO CLAIM YET"+ " =====\033[0m");
+            System.out.println("—————————— " +  customer.getFullName().toUpperCase() +" HAVE NO CLAIM YET —————————");
         } else {
             printAClaimInfo(customer.getClaims(),customer.getFullName() ); // Pass the entire list of claims
         }

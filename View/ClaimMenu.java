@@ -93,6 +93,7 @@ public class ClaimMenu {
 
                         if (customers.isEmpty()) {
                             System.out.println("No customers in the system. You need to add a customer and his/her insurance card first.");
+                            System.out.print("\n");
                             mainMenu.addCustomerAndCard();
                         } else {
                             String inSystem = "";

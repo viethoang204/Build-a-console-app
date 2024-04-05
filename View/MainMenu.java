@@ -108,7 +108,6 @@ public class MainMenu {
             if (customerType.equals("P")) {
                 System.out.print("\n");
                 System.out.println("——————————————— FILL IN THE INFORMATION OF THE CARD —————————————————");
-                System.out.println("—————————— FILL IN THE INFORMATION OF THE CUSTOMER'S CARD ———————————");
                 String cardnumber = null;
                 System.out.println("Choose an option:");
                 System.out.println("1. Manually input card number");
@@ -178,14 +177,15 @@ public class MainMenu {
 
             } else if (customerType.equals("D")) {
                 this.printPolicyHolders(customerController.getAll(), true);
-                System.out.print("Enter the ID of the policy holder for this dependent: ");
+                System.out.print("Enter the ID of the policy holder for this dependent (c-xxxxxxx): ");
                 String policyHolderId = scanner.nextLine();
                 PolicyHolder policyHolder = (PolicyHolder) customerController.getOne(policyHolderId);
                 if (policyHolder == null) {
                     System.out.println("Policy holder not found with the given ID.");
                     return;
                 }
-                System.out.println("\033[1m====== FILL IN THE INFORMATION OF THE CARD =====\033[0m");
+                System.out.print("\n");
+                System.out.println("——————————————— FILL IN THE INFORMATION OF THE CARD —————————————————");
                 String cardnumber = null;
                 System.out.println("Choose an option:");
                 System.out.println("1. Manually input card number");
@@ -201,8 +201,8 @@ public class MainMenu {
                             cardnumber = scanner.nextLine();
                             if (cardnumber.isEmpty()) {
                                 System.out.println("Card number cannot be empty. Please try again.");
-                            } else if (cardnumber.length() < 10) {
-                                System.out.println("Card number must be at least 10 digits. Please try again.");
+                            } else if (cardnumber.length() != 10) {
+                                System.out.println("Card number must be exactly 10 digits. Please try again.");
                                 cardnumber = null; // Reset cardnumber to null to continue the loop
                             } else if (cardExists(cardnumber)) {
                                 System.out.println("Card number already exists. Please try again.");
@@ -220,7 +220,7 @@ public class MainMenu {
                         break;
                 }
 
-                System.out.println("Policy owner of this insurance card is: " + policyHolder.getInsuranceCard().getPolicyOwner());
+                System.out.println("\033[1mPolicy owner of this insurance card is: \033[0m" + policyHolder.getInsuranceCard().getPolicyOwner());
 
                 SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy");
                 Date expirationdate = null;
