@@ -19,13 +19,9 @@ import java.util.stream.Collectors;
 public class CustomerMenu {
     private MainMenu mainMenu;
     private static CustomerMenu instance;
-
     private final CustomerController customerController = CustomerController.getInstance();
-
     private final ClaimController claimController = ClaimController.getInstance();
-
     private final InsuranceCardController insuranceCardController = InsuranceCardController.getInstance();
-
     private final Scanner scanner = new Scanner(System.in);
 
     public static CustomerMenu getInstance() {
@@ -170,7 +166,7 @@ public class CustomerMenu {
                             }
                         }
 
-                        claimController.writeCustomersToFile();
+                        customerController.writeCustomersToFile();
                         System.out.println("Customer and related information updated");
                     } catch (Exception e) {
                         System.out.println("An error occurred. Please try again");

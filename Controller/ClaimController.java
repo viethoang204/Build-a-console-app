@@ -18,6 +18,7 @@ public class ClaimController implements ClaimProcessManager {
     private ArrayList<Claim> listOfClaims;
     private ArrayList<Customer> listOfCustomers;
     private ArrayList<InsuranceCard> listOfInsuranceCards;
+    private CustomerController customerController;
 
     @Override
     public Claim getOne(String claimId) {
@@ -49,6 +50,7 @@ public class ClaimController implements ClaimProcessManager {
         Claim claim = new Claim(claimId, claimdate, insuredperson, cardnumber, examdate, formattedListOfDocuments, amount, status, receiverbankinginfor);
         this.listOfClaims.add(claim);
         writeClaimsToFile();
+
     }
 
     @Override
@@ -61,7 +63,6 @@ public class ClaimController implements ClaimProcessManager {
             }
         }
         writeClaimsToFile();
-        writeCustomersToFile();
     }
 
     @Override
@@ -70,8 +71,8 @@ public class ClaimController implements ClaimProcessManager {
     }
 
     @Override
-    public boolean delete(String claimID){
-        if (listOfClaims.removeIf(claim -> claim.getId().equals(claimID))) {
+    public boolean delete(String claimId){
+        if (listOfClaims.removeIf(claim -> claim.getId().equals(claimId))) {
             writeClaimsToFile();
             return true;
         }
@@ -107,24 +108,6 @@ public class ClaimController implements ClaimProcessManager {
         for (InsuranceCard card : listOfInsuranceCards) {
             if (card.getCardHolder().getId().equals(id.trim())) {
                 return card.getCardNumber();
-            }
-        }
-        return null;
-    }
-
-    public Dependent getCustomerDById(String id) {
-        for (Customer customer : listOfCustomers) {
-            if (customer instanceof Dependent && customer.getId().equals(id.trim())) {
-                return (Dependent) customer;
-            }
-        }
-        return null;
-    }
-
-    public Customer getCustomerById(String id) {
-        for (Customer customer : listOfCustomers) {
-            if (customer.getId().equals(id.trim())) {
-                return customer;
             }
         }
         return null;
@@ -355,77 +338,6 @@ public class ClaimController implements ClaimProcessManager {
         }
     }
 
-    public void writeCustomersToFile() {
-        try (PrintWriter writer = new PrintWriter(new FileWriter("dataFile/customers.txt"))) {
-            // Write the CSV header
-            writer.println("ID,Full Name,Insurance Card,List Of Claims,List Of Dependents");
-
-            // Write customer records
-            for (Customer customer : listOfCustomers) {
-                // Initializing dependents string to be empty
-                String dependents = "";
-                if (customer instanceof PolicyHolder) {
-                    List<Dependent> listOfDependents = ((PolicyHolder) customer).getListOfDependents();
-                    // Check if listOfDependents is not null and not empty before proceeding
-                    if (listOfDependents != null && !listOfDependents.isEmpty()) {
-                        dependents = listOfDependents.stream()
-                                .map(Dependent::getId)
-                                .collect(Collectors.joining(";"));
-                        dependents = "[" + dependents + "]";
-                    } else {
-                        // Add empty brackets if there are no dependents to ensure the record has 5 elements
-                        dependents = "[]";
-                    }
-                }
-
-                // Preparing the claims string, including brackets regardless of content
-                String claims = "[" + customer.getClaims().stream().map(Claim::getId).collect(Collectors.joining(";")) + "]";
-
-                // Formatting the output line for PolicyHolder and Dependent differently
-                String outputLine;
-                if (customer instanceof PolicyHolder) {
-                    outputLine = String.format("%s,%s,%s,%s,%s",
-                            customer.getId(),
-                            customer.getFullName(),
-                            customer.getInsuranceCard().getCardNumber(),
-                            claims,
-                            dependents); // Always include dependents field for PolicyHolder
-                } else {
-                    // For Dependents, no need to add an empty dependents field
-                    outputLine = String.format("%s,%s,%s,%s",
-                            customer.getId(),
-                            customer.getFullName(),
-                            customer.getInsuranceCard().getCardNumber(),
-                            claims);
-                }
-
-                writer.println(outputLine);
-            }
-        } catch (IOException e) {
-//            e.printStackTrace();
-        }
-    }
-
-    public void writeInsuranceCardoFile() {
-        try (PrintWriter writer = new PrintWriter(new FileWriter("dataFile/insuranceCards.txt"))) {
-            // Write the CSV header
-            writer.println("Card Number,Card Holder,Policy Owner,Expiration Date");
-
-            // Write claim records
-            for (InsuranceCard insurancecard : listOfInsuranceCards) {
-                String cardHolderId = insurancecard.getCardHolder() != null ? insurancecard.getCardHolder().getId() : null;
-                writer.println(String.format("%s,%s,%s,%s",
-                        insurancecard.getCardNumber(),
-                        cardHolderId,
-                        insurancecard.getPolicyOwner(),
-                        formatDate(insurancecard.getExpirationDate())
-                ));
-            }
-        } catch (IOException e) {
-//            e.printStackTrace();
-        }
-    }
-
     public ArrayList<Claim> getListOfClaims() {
         return listOfClaims;
     }
@@ -475,6 +387,24 @@ public class ClaimController implements ClaimProcessManager {
             listOfClaims.sort(Comparator.comparing(Claim::getClaimAmount).reversed());
             currentClaimOrder = "claim amount from lowest highest to oldest";
         }
+    }
+
+    public Dependent getCustomerDById(String id) {
+        for (Customer customer : listOfCustomers) {
+            if (customer instanceof Dependent && customer.getId().equals(id.trim())) {
+                return (Dependent) customer;
+            }
+        }
+        return null;
+    }
+
+    public Customer getCustomerById(String id) {
+        for (Customer customer : listOfCustomers) {
+            if (customer.getId().equals(id.trim())) {
+                return customer;
+            }
+        }
+        return null;
     }
 
 }

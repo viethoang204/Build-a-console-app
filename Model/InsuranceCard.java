@@ -7,7 +7,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class InsuranceCard {
-    private String cardNumber; // 10 digits
+    private String cardNumber;
     private Customer cardHolder;
     private String policyOwner;
     private Date expirationDate;
@@ -25,10 +25,6 @@ public class InsuranceCard {
 
     public String getCardNumber() {
         return cardNumber;
-    }
-
-    public void setCardNumber(String cardNumber) {
-        this.cardNumber = cardNumber;
     }
 
     public Customer getCardHolder() {
@@ -54,6 +50,7 @@ public class InsuranceCard {
     public void setExpirationDate(Date expirationDate) {
         this.expirationDate = expirationDate;
     }
+
     public String toString() {
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
         return "InsuranceCard{" +

@@ -5,6 +5,7 @@
 package View;
 
 import Controller.ClaimController;
+import Controller.CustomerController;
 import Model.BankingInfo;
 import Model.Claim;
 import Model.Customer;
@@ -21,8 +22,8 @@ import java.util.stream.Collectors;
 public class ClaimMenu {
     private MainMenu mainMenu;
     private static ClaimMenu instance;
-
     private final ClaimController claimController = ClaimController.getInstance();
+    CustomerController customerController = CustomerController.getInstance();
 
     private final Scanner scanner = new Scanner(System.in);
 
@@ -113,7 +114,6 @@ public class ClaimMenu {
                         }
                         mainMenu.printClaimsInfo(claimController.getAll(), true);
                         System.out.print("\n");
-//                        System.out.println("\033[1m===== CREATE NEW CLAIM =====\033[0m");
                         SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy");
                         Date claimdate = null;
                         while (claimdate == null) {
@@ -157,9 +157,16 @@ public class ClaimMenu {
                         }
 
                         System.out.print("Enter a list of document names without file prefix and extensions, separated by commas: ");
-                        List<String> rawListOfDocuments = Arrays.asList(scanner.nextLine().split(","));
-                        Set<String> documentSet = new LinkedHashSet<>(rawListOfDocuments);
-                        List<String> listofdocuments = new ArrayList<>(documentSet);
+                        String input = scanner.nextLine();
+                        List<String> listofdocuments;
+
+                        if (input.isEmpty()) {
+                            listofdocuments = new ArrayList<>();
+                        } else {
+                            List<String> rawListOfDocuments = Arrays.asList(input.split(","));
+                            Set<String> documentSet = new LinkedHashSet<>(rawListOfDocuments);
+                            listofdocuments = new ArrayList<>(documentSet);
+                        }
 
                         Double amount = null;
                         while (amount == null) {
@@ -192,7 +199,16 @@ public class ClaimMenu {
                         String number_bank = scanner.nextLine();
                         BankingInfo receiverbankinginfor = new BankingInfo(bank, name_bank, number_bank);
 
+                        // Create the new claim and add it to the controller
                         claimController.add(claimdate, insuredperson, cardnumber, examdate, listofdocuments, amount, status, receiverbankinginfor);
+
+                        // Get the newly created claim
+                        Claim newClaim = claimController.getOne(claimController.getListOfClaims().get(claimController.getListOfClaims().size() - 1).getId());
+
+                        // Add the new claim to the customer's list of claims
+                        insuredperson.setClaim(newClaim);
+                        customerController.writeCustomersToFile();
+
                     } catch (Exception e) {
                         System.out.println("An error occurred. Please try again");
                     }
@@ -219,7 +235,7 @@ public class ClaimMenu {
                                     }
                                 }
                             }
-                            claimController.writeCustomersToFile();
+                            customerController.writeCustomersToFile();
                         } else {
                             System.out.println("Claim not found with the given ID.");
                         }
@@ -247,7 +263,7 @@ public class ClaimMenu {
                         Customer oldInsuredPerson = claim.getInsuredPerson();
 
                         SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy");
-                        System.out.print("Enter claim date (dd-MM-yyyy) or press Enter to skip: ");
+                        System.out.print("Change claim date (dd-MM-yyyy) or press Enter to skip: ");
                         String claimDateInput = scanner.nextLine();
                         if (!claimDateInput.isEmpty()) {
                             try {
@@ -259,7 +275,7 @@ public class ClaimMenu {
                         }
 
                         mainMenu.printCustomersAndCardsInfo(claimController.getListOfCustomers(), claimController.getListOfInsuranceCards(), true);
-                        System.out.print("Enter insured person ID (c-xxxxxxx) or press Enter to skip: ");
+                        System.out.print("Change insured person ID (c-xxxxxxx) for this claim or press Enter to skip: ");
                         String customerId = scanner.nextLine().trim();
                         if (!customerId.isEmpty()) {
                             Customer insuredperson = claimController.getCustomerById(customerId);
@@ -290,7 +306,7 @@ public class ClaimMenu {
                             }
                         }
 
-                        System.out.print("Enter exam date (dd-MM-yyyy) or press Enter to skip: ");
+                        System.out.print("Change exam date (dd-MM-yyyy) or press Enter to skip: ");
                         String examDateInput = scanner.nextLine();
                         if (!examDateInput.isEmpty()) {
                             try {
@@ -369,7 +385,7 @@ public class ClaimMenu {
                             }
                         }
 
-                        System.out.print("Enter claim amount($) or press enter to Skip: ");
+                        System.out.print("Change claim amount($) or press enter to Skip: ");
                         String amountInput = scanner.nextLine();
                         if (!amountInput.isEmpty()) {
                             try {
@@ -380,7 +396,7 @@ public class ClaimMenu {
                             }
                         }
 
-                        System.out.print("Enter status (New, Processing, Done) or press Enter to skip: ");
+                        System.out.print("Change status (New, Processing, Done) or press Enter to skip: ");
                         String status = scanner.nextLine().trim().toLowerCase();
                         if (!status.isEmpty()) {
                             if (status.equals("new") || status.equals("processing") || status.equals("done")) {
@@ -393,18 +409,19 @@ public class ClaimMenu {
 
                         System.out.print("\n");
                         System.out.print("===== EDIT BANKING INFORMATION OF " + claim.getInsuredPerson().getFullName().toUpperCase() +" =====" + "\n");
-                        System.out.print("Enter the bank name: ");
+                        System.out.print("Change the bank name or enter to skip: ");
                         String bank = scanner.nextLine().toUpperCase();
                         if (!bank.isEmpty()){
                             claim.getReceiverBankingInfo().setBank(bank);
                         }
-                        System.out.print("Enter the card number: ");
+                        System.out.print("Change the card number or enter to skip: ");
                         String number_bank = scanner.nextLine();
                         if (!number_bank.isEmpty()){
                             claim.getReceiverBankingInfo().setNumber(number_bank);
                         }
 
                         claimController.update(claim);
+                        customerController.writeCustomersToFile();
                         System.out.println("Claim updated");
                     } catch (Exception e) {
                         System.out.println("An error occurred. Please try again");
@@ -772,7 +789,7 @@ public class ClaimMenu {
         }
         System.out.println("Exam Date: " + new SimpleDateFormat("dd-MM-yyyy").format(claim.getExamDate()));
         System.out.println("List of Documents: " + claim.getDocuments().stream().collect(Collectors.joining(", ")));
-        System.out.println("Claim Amount: " + claim.getClaimAmount());
+        System.out.println("Claim Amount($): " + claim.getClaimAmount());
         System.out.println("Status: " + claim.getStatus());
         System.out.println("Receiver Banking Info: " + claim.getReceiverBankingInfo().printInfor());
 

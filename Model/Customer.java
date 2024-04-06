@@ -19,10 +19,6 @@ public class Customer {
         this.insuranceCard = insuranceCard;
         this.claims = claims;}
 
-    public Customer(String insuredPerson) {
-        this.fullName = insuredPerson;
-    }
-
     public String getId() {
         return id;
     }
@@ -47,10 +43,6 @@ public class Customer {
         return claims;
     }
 
-    public void setClaims(List<Claim> claims) {
-        this.claims = claims;
-    }
-
     public String toString() {
         return "Customer{" +
                 "id='" + id + '\'' +
@@ -60,5 +52,7 @@ public class Customer {
                 '}';
     }
 
-
+    public void setClaim(Claim claim) {
+        this.claims.add(claim);
+    }
 }

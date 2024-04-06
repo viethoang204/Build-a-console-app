@@ -14,12 +14,10 @@ public class PolicyHolder extends Customer {
         this.dependents = listOfDependents;
     }
 
-    // Thêm Dependent vào danh sách
     public void addDependent(Dependent dependent) {
         this.dependents.add(dependent);
     }
 
-    // Lấy danh sách Dependents
     public List<Dependent> getDependents() {
         return dependents;
     }
@@ -36,8 +34,5 @@ public class PolicyHolder extends Customer {
             '}';
 
 }
-    public List<Dependent> getListOfDependents() {
-        return this.dependents;
-    }
 
 }

@@ -6,9 +6,13 @@ package Controller;
 
 import Model.*;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class CustomerController {
     public String currentCustomerOrder = "default";
@@ -81,7 +85,7 @@ public class CustomerController {
                 }
 
 //                 If the customer is a Dependent, remove them from their PolicyHolder's list of dependents
-                claimController.writeCustomersToFile();
+                writeCustomersToFile();
                 claimController.writeClaimsToFile1();
                 return true;
             }
@@ -127,7 +131,7 @@ public class CustomerController {
                         }
                     }
                 }
-                claimController.writeCustomersToFile();
+                writeCustomersToFile();
                 claimController.writeClaimsToFile1();
                 return true;
             }
@@ -139,7 +143,7 @@ public class CustomerController {
         String id = generateUniqueCustomerID();
         PolicyHolder policyHolder = new PolicyHolder(id, fullName, insuranceCard, claims, dependents);
         this.getListOfCustomers().add(policyHolder);
-        claimController.writeCustomersToFile();
+        writeCustomersToFile();
         return policyHolder;
     }
 
@@ -147,7 +151,7 @@ public class CustomerController {
         String id = generateUniqueCustomerID();
         Dependent dependent = new Dependent(id, fullName, insuranceCard, claims);
         this.getListOfCustomers().add(dependent);
-        claimController.writeCustomersToFile();
+        writeCustomersToFile();
         return dependent;
     }
 
@@ -181,6 +185,57 @@ public class CustomerController {
         } else {
             claimController.getListOfCustomers().sort(Comparator.comparingInt(customer -> ((Customer)customer).getClaims().size()).reversed());
             currentCustomerOrder = "claim count from most to least";
+        }
+    }
+
+    public void writeCustomersToFile() {
+        try (PrintWriter writer = new PrintWriter(new FileWriter("dataFile/customers.txt"))) {
+            // Write the CSV header
+            writer.println("ID,Full Name,Insurance Card,List Of Claims,List Of Dependents");
+
+            // Write customer records
+            for (Customer customer : claimController.getListOfCustomers()) {
+                // Initializing dependents string to be empty
+                String dependents = "";
+                if (customer instanceof PolicyHolder) {
+                    List<Dependent> listOfDependents = ((PolicyHolder) customer).getDependents();
+                    // Check if listOfDependents is not null and not empty before proceeding
+                    if (listOfDependents != null && !listOfDependents.isEmpty()) {
+                        dependents = listOfDependents.stream()
+                                .map(Dependent::getId)
+                                .collect(Collectors.joining(";"));
+                        dependents = "[" + dependents + "]";
+                    } else {
+                        // Add empty brackets if there are no dependents to ensure the record has 5 elements
+                        dependents = "[]";
+                    }
+                }
+
+                // Preparing the claims string, including brackets regardless of content
+                String claims = "[" + customer.getClaims().stream().map(Claim::getId).collect(Collectors.joining(";")) + "]";
+
+                // Formatting the output line for PolicyHolder and Dependent differently
+                String outputLine;
+                if (customer instanceof PolicyHolder) {
+                    outputLine = String.format("%s,%s,%s,%s,%s",
+                            customer.getId(),
+                            customer.getFullName(),
+                            customer.getInsuranceCard().getCardNumber(),
+                            claims,
+                            dependents); // Always include dependents field for PolicyHolder
+                } else {
+                    // For Dependents, no need to add an empty dependents field
+                    outputLine = String.format("%s,%s,%s,%s",
+                            customer.getId(),
+                            customer.getFullName(),
+                            customer.getInsuranceCard().getCardNumber(),
+                            claims);
+                }
+
+                writer.println(outputLine);
+            }
+        } catch (IOException e) {
+//            e.printStackTrace();
         }
     }
 

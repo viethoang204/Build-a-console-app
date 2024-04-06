@@ -19,14 +19,6 @@ public class Claim {
     private String status; // New, Processing, Done
     private BankingInfo receiverBankingInfo; // Bank – Name – Number
 
-    public InsuranceCard getCardNumber() {
-        return cardNumber;
-    }
-
-    public void setCardNumber(InsuranceCard cardNumber) {
-        this.cardNumber = cardNumber;
-    }
-
     public Claim(String id, Date claimDate, Customer insuredPerson, InsuranceCard cardNumber, Date examDate, List<String> documents, double claimAmount, String status, BankingInfo receiverBankingInfo) {
         this.id = id;
         this.claimDate = claimDate;
@@ -37,6 +29,14 @@ public class Claim {
         this.claimAmount = claimAmount;
         this.status = status;
         this.receiverBankingInfo = receiverBankingInfo;
+    }
+
+    public InsuranceCard getCardNumber() {
+        return cardNumber;
+    }
+
+    public void setCardNumber(InsuranceCard cardNumber) {
+        this.cardNumber = cardNumber;
     }
 
     public String getId() {
@@ -98,7 +98,6 @@ public class Claim {
     public BankingInfo getReceiverBankingInfo() {
         return receiverBankingInfo;
     }
-
 
     @Override
     public String toString() {

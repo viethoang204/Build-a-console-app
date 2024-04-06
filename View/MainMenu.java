@@ -171,7 +171,7 @@ public class MainMenu {
                 // Pass the InsuranceCard object when creating the PolicyHolder
                 PolicyHolder policyHolder = customerController.addPolicyHolder(fullname, insuranceCard, new ArrayList<>(), listofdependents);
                 insuranceCard.setCardHolder(policyHolder);
-                claimController.writeInsuranceCardoFile();
+                insuranceCardController.writeInsuranceCardToFile();
 
                 System.out.println("Customer " + fullname + " and insurance card " + cardnumber + " added successfully.");
 
@@ -242,10 +242,10 @@ public class MainMenu {
 
                 // Add the dependent to the list of dependents of the policyholder
                 policyHolder.addDependent(dependent);
-                claimController.writeCustomersToFile();
+                customerController.writeCustomersToFile();
 
                 insuranceCard.setCardHolder(dependent);
-                claimController.writeInsuranceCardoFile();
+                insuranceCardController.writeInsuranceCardToFile();
 
                 System.out.println("Customer " + fullname + " and insurance card " + cardnumber + " added successfully.");
             }

@@ -14,7 +14,6 @@ public class Dependent extends Customer {
         super(id, fullName, insuranceCard, claims);
     }
 
-    // create getPolicyHolder method
     public PolicyHolder getPolicyHolder() {
         // iterate over the list of customers
         for (Customer customer : new ArrayList<>(ClaimController.getInstance().getListOfCustomers())) {

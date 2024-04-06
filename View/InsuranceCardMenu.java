@@ -19,13 +19,9 @@ import java.util.*;
 public class InsuranceCardMenu {
     private MainMenu mainMenu;
     private static InsuranceCardMenu instance;
-
     private final InsuranceCardController insuranceCardController = InsuranceCardController.getInstance();
-
     private final CustomerController customerController = CustomerController.getInstance();
-
     private final ClaimController claimController = ClaimController.getInstance();
-
     private final Scanner scanner = new Scanner(System.in);
 
     public static InsuranceCardMenu getInstance() {
@@ -232,7 +228,7 @@ public class InsuranceCardMenu {
                             }
                         }
 
-                        claimController.writeInsuranceCardoFile();
+                        insuranceCardController.writeInsuranceCardToFile();
                         System.out.println("Insurance card updated");
                     } catch (Exception e) {
                         System.out.println("An error occurred. Please try again");
