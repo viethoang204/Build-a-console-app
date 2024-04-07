@@ -281,7 +281,7 @@ public class ClaimMenu {
                             Customer insuredperson = claimController.getCustomerById(customerId);
                             if (insuredperson != null) {
                                 claim.setInsuredPerson(insuredperson);
-                                if (!insuredperson.equals(oldInsuredPerson)) {
+                                if (oldInsuredPerson != null && !insuredperson.equals(oldInsuredPerson)) {
                                     List<Claim> oldInsuredPersonClaims = oldInsuredPerson.getClaims();
                                     for (int i = 0; i < oldInsuredPersonClaims.size(); i++) {
                                         if (oldInsuredPersonClaims.get(i).getId().equals(claim.getId())) {
@@ -290,14 +290,14 @@ public class ClaimMenu {
                                             break; // Exit the loop after removing the claim
                                         }
                                     }
-                                    List<Claim> newInsuredPersonClaims = insuredperson.getClaims();
-                                    boolean claimAlreadyExists = newInsuredPersonClaims.stream().anyMatch(c -> c.getId().equals(claim.getId()));
-                                    if (!claimAlreadyExists) {
-                                        newInsuredPersonClaims.add(claim);
-                                        System.out.println("Claim added to new insured person's list.");
-                                    } else {
-                                        System.out.println("Claim already exists in the new insured person's list.");
-                                    }
+                                }
+                                List<Claim> newInsuredPersonClaims = insuredperson.getClaims();
+                                boolean claimAlreadyExists = newInsuredPersonClaims.stream().anyMatch(c -> c.getId().equals(claim.getId()));
+                                if (!claimAlreadyExists) {
+                                    newInsuredPersonClaims.add(claim);
+                                    System.out.println("Claim added to new insured person's list.");
+                                } else {
+                                    System.out.println("Claim already exists in the new insured person's list.");
                                 }
                                 InsuranceCard cardnumber = insuredperson.getInsuranceCard();
                                 System.out.println("\033[1mInsurance card number of " + insuredperson.getFullName() + " is " + cardnumber.getCardNumber() + "\033[0m");
