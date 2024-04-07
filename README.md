@@ -1,7 +1,7 @@
 # THE INSURANCE CLAIM MANAGEMENT SYSTEM
 
 ## Overview
-The insurance claims management system is structured to accommodate intricate details relating to customers, their insurance cards, and associated claims. Each customer, identifiable by a unique ID, can either be a policyholder or a dependent, holding an insurance card with specific details like the card number, holder, policy owner, and expiration date. Claims are meticulously recorded, including information such as the claim ID, dates, insured person, card number, associated documents, amount, status, and receiver banking information.
+The insurance claims management system is design to manage intricate details relating to customers, their insurance cards, and associated claims. Each customer, identifiable by a unique ID, can either be a policyholder or a dependent, holding an insurance card with specific details like the card number, holder, policy owner, and expiration date. Claims are meticulously recorded, including information such as the claim ID, dates, insured person, card number, associated documents, amount, status, and receiver banking information.
 
 ## Features
 List the key features of this claim management system.
